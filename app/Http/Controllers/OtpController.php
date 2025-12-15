@@ -26,7 +26,6 @@ class OtpController extends Controller
             'otp' => 'required|digits:6',
         ]);
 
-        // Find OTP
         $otp = EmailOtp::where('user_id', session('otp_user_id'))
             ->where('otp', $request->otp)
             ->where('expires_at', '>', now())
@@ -38,10 +37,9 @@ class OtpController extends Controller
             ]);
         }
 
-        // 🔐 Login user safely
+        // Login user
         Auth::loginUsingId($otp->user_id);
 
-        // 🔥 IMPORTANT: Fetch user DIRECTLY from DB
         $user = User::find($otp->user_id);
 
         if (!$user) {
@@ -49,7 +47,7 @@ class OtpController extends Controller
                 ->withErrors(['otp' => 'User not found. Please login again.']);
         }
 
-        // ✅ Update OTP flag (NO save() issue)
+        // Mark OTP verified
         User::where('id', $user->id)->update([
             'is_otp_verified' => true,
         ]);
@@ -58,8 +56,8 @@ class OtpController extends Controller
         $otp->delete();
         session()->forget('otp_user_id');
 
-        // Role based redirect
-        if (in_array($user->role->slug, ['super-admin', 'admin', 'manager'])) {
+        //  SPATIE ROLE BASED REDIRECT
+        if ($user->hasAnyRole(['super-admin', 'admin', 'manager'])) {
             return redirect('/admin/dashboard');
         }
 
