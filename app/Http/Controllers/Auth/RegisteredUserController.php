@@ -4,10 +4,8 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
@@ -24,8 +22,6 @@ class RegisteredUserController extends Controller
 
     /**
      * Handle an incoming registration request.
-     *
-     * @throws \Illuminate\Validation\ValidationException
      */
     public function store(Request $request): RedirectResponse
     {
@@ -37,23 +33,23 @@ class RegisteredUserController extends Controller
                 'lowercase',
                 'email',
                 'max:255',
-                'unique:' . User::class,
+                'unique:users',
             ],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        // 🔥 DEFAULT ROLE = USER (id = 4)
-        $user = User::create([
-            'name'     => $request->name,
-            'email'    => $request->email,
-            'password' => Hash::make($request->password),
-            'role_id'  => 4, // 👈 IMPORTANT LINE
+        // ✅ USER CREATE (NO AUTO LOGIN)
+        User::create([
+            'name'            => $request->name,
+            'email'           => $request->email,
+            'password'        => Hash::make($request->password),
+            'role_id'         => 4,        // USER
+            'is_otp_verified' => false,    // OTP NOT VERIFIED
         ]);
 
-        event(new Registered($user));
 
-        Auth::login($user);
-
-        return redirect(route('dashboard', absolute: false));
+        // ✅ Register ke baad login page
+        return redirect()->route('login')
+            ->with('success', 'Registration successful. Please login.');
     }
 }

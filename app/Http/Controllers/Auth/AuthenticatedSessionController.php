@@ -13,43 +13,59 @@ use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
 {
+    /**
+     * Display login view
+     */
     public function create(): View
     {
         return view('auth.login');
     }
 
+    /**
+     * Handle login request
+     */
     public function store(LoginRequest $request): RedirectResponse
     {
-        // Email + password authenticate
+        // 1️⃣ Authenticate user (email + password)
         $request->authenticate();
         $request->session()->regenerate();
 
         $user = Auth::user();
 
-        // Generate OTP
-        $otp = rand(100000, 999999);
+        // 2️⃣ OTP ONLY FIRST LOGIN
+        if (!$user->is_otp_verified) {
 
-        EmailOtp::create([
-            'user_id' => $user->id,
-            'otp' => $otp,
-            'expires_at' => now()->addMinutes(5),
-        ]);
+            $otp = rand(100000, 999999);
 
-        // Send OTP email
-        Mail::raw("Your login OTP is: $otp", function ($mail) use ($user) {
-            $mail->to($user->email)
-                 ->subject('Login OTP Verification');
-        });
+            EmailOtp::create([
+                'user_id'    => $user->id,
+                'otp'        => $otp,
+                'expires_at' => now()->addMinutes(5),
+            ]);
 
-        // Logout until OTP verified
-        Auth::logout();
-        session(['otp_user_id' => $user->id]);
+            // Send OTP mail (Mailtrap)
+            Mail::raw("Your login OTP is: $otp", function ($mail) use ($user) {
+                $mail->to($user->email)
+                     ->subject('Login OTP Verification');
+            });
 
-        return redirect()->route('otp.page');
+            // Logout until OTP verified
+            Auth::logout();
+            session(['otp_user_id' => $user->id]);
+
+            return redirect()->route('otp.page');
+        }
+
+        // 3️⃣ OTP already verified → role based redirect
+        if (in_array($user->role->slug, ['super-admin', 'admin', 'manager'])) {
+            return redirect('/admin/dashboard');
+        }
+
+        return redirect('/dashboard');
     }
 
     /**
-     * Destroy an authenticated session.
+     * Logout
      */
     public function destroy(Request $request): RedirectResponse
     {
