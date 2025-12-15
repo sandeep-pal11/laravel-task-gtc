@@ -4,40 +4,48 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\EmailOtp;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
 {
-    /**
-     * Display the login view.
-     */
     public function create(): View
     {
         return view('auth.login');
     }
 
-    /**
-     * Handle an incoming authentication request.
-     */
     public function store(LoginRequest $request): RedirectResponse
     {
-        // Login (email + password)
+        // Email + password authenticate
         $request->authenticate();
-
-        // Regenerate session
         $request->session()->regenerate();
 
-        // 🔥 ROLE BASED REDIRECT
         $user = Auth::user();
 
-        if (in_array($user->role->slug, ['super-admin', 'admin', 'manager'])) {
-            return redirect('/admin/dashboard');
-        }
+        // Generate OTP
+        $otp = rand(100000, 999999);
 
-        return redirect('/dashboard');
+        EmailOtp::create([
+            'user_id' => $user->id,
+            'otp' => $otp,
+            'expires_at' => now()->addMinutes(5),
+        ]);
+
+        // Send OTP email
+        Mail::raw("Your login OTP is: $otp", function ($mail) use ($user) {
+            $mail->to($user->email)
+                 ->subject('Login OTP Verification');
+        });
+
+        // Logout until OTP verified
+        Auth::logout();
+        session(['otp_user_id' => $user->id]);
+
+        return redirect()->route('otp.page');
     }
 
     /**

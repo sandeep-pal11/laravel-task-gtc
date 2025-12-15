@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\OtpController;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,7 +16,7 @@ Route::get('/', function () {
 });
 
 // ==========================
-// AUTHENTICATED USER ROUTES
+// USER AUTHENTICATED ROUTES
 // ==========================
 Route::middleware(['auth'])->group(function () {
 
@@ -24,7 +25,7 @@ Route::middleware(['auth'])->group(function () {
         return view('dashboard');
     })->name('dashboard');
 
-    // USER PROFILE ROUTES  👈 YAHAN likhna tha
+    // USER PROFILE
     Route::get('/profile', [ProfileController::class, 'edit'])
         ->name('profile.edit');
 
@@ -36,6 +37,15 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // ==========================
+// OTP ROUTES (NO AUTH)
+// ==========================
+Route::get('/verify-otp', [OtpController::class, 'show'])
+    ->name('otp.page');
+
+Route::post('/verify-otp', [OtpController::class, 'verify'])
+    ->name('otp.verify');
+
+// ==========================
 // ADMIN DASHBOARD
 // ==========================
 Route::middleware(['auth'])->group(function () {
@@ -44,5 +54,7 @@ Route::middleware(['auth'])->group(function () {
     })->name('admin.dashboard');
 });
 
-// Breeze auth routes (login, register, logout, password reset)
+// ==========================
+// AUTH ROUTES (BREEZE)
+// ==========================
 require __DIR__ . '/auth.php';
