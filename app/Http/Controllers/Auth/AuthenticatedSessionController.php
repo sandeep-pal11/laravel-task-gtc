@@ -43,29 +43,32 @@ class AuthenticatedSessionController extends Controller
                 'expires_at' => now()->addMinutes(5),
             ]);
 
-            // Send OTP mail (Mailtrap)
             Mail::raw("Your login OTP is: $otp", function ($mail) use ($user) {
                 $mail->to($user->email)
                      ->subject('Login OTP Verification');
             });
 
-            // Logout until OTP verified
             Auth::logout();
             session(['otp_user_id' => $user->id]);
 
             return redirect()->route('otp.page');
         }
 
-        // 3️⃣ OTP already verified → role based redirect
-        if (in_array($user->role->slug, ['super-admin', 'admin', 'manager'])) {
-            return redirect('/admin/dashboard');
+        // 3️⃣ ROLE BASED REDIRECT
+        // ✅ Normal users have 'web' guard role
+        if ($user->hasRole('user')) {
+            return redirect()->route('dashboard');
         }
 
-        return redirect('/dashboard');
+        // ❌ Agar user ko role nahi hai
+        Auth::logout();
+        return redirect('/login')->withErrors([
+            'email' => 'Role not assigned. Contact admin.',
+        ]);
     }
 
     /**
-     * Logout
+     * Destroy an authenticated session
      */
     public function destroy(Request $request): RedirectResponse
     {
