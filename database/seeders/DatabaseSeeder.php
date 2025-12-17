@@ -8,9 +8,7 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1️⃣ Roles FIRST
         $this->call(RolePermissionSeeder::class);
-
-        // (optional) future seeders yahan
+        $this->call(AdminUserSeeder::class);
     }
 }

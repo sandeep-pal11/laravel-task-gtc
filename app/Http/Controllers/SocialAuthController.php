@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Str;
+use Laravel\Socialite\Contracts\User as SocialUser; // ✅ ADD THIS
 
 class SocialAuthController extends Controller
 {
@@ -19,15 +20,18 @@ class SocialAuthController extends Controller
 
     public function handleGoogleCallback()
     {
+        /** @var SocialUser $googleUser */
         $googleUser = Socialite::driver('google')->user();
 
         $user = User::firstOrCreate(
-            ['email' => $googleUser->email],
+            ['email' => (string) $googleUser->getEmail()], // ✅ METHOD, NOT PROPERTY
             [
-                'name' => $googleUser->name ?? $googleUser->nickname ?? 'Google User',
+                'name' => $googleUser->getName()
+                    ?? $googleUser->getNickname()
+                    ?? 'Google User',
                 'password' => bcrypt(Str::random(12)),
-                'role_id' => 4,               // USER
-                'is_otp_verified' => true,    // SOCIAL LOGIN = TRUSTED
+                'role_id' => 4,
+                'is_otp_verified' => true,
             ]
         );
 
@@ -46,15 +50,18 @@ class SocialAuthController extends Controller
 
     public function handleGithubCallback()
     {
+        /** @var SocialUser $githubUser */
         $githubUser = Socialite::driver('github')->user();
 
-        // 🔥 GitHub email can be NULL
-        $email = $githubUser->email ?? $githubUser->nickname . '@github.local';
+        $email = $githubUser->getEmail()
+            ?? ($githubUser->getNickname() . '@github.local');
 
         $user = User::firstOrCreate(
-            ['email' => $email],
+            ['email' => (string) $email],
             [
-                'name' => $githubUser->name ?? $githubUser->nickname ?? 'Github User',
+                'name' => $githubUser->getName()
+                    ?? $githubUser->getNickname()
+                    ?? 'Github User',
                 'password' => bcrypt(Str::random(12)),
                 'role_id' => 4,
                 'is_otp_verified' => true,

@@ -13,26 +13,23 @@ use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
 {
-    /**
-     * Display login view
-     */
     public function create(): View
     {
         return view('auth.login');
     }
 
-    /**
-     * Handle login request
-     */
     public function store(LoginRequest $request): RedirectResponse
     {
-        // 1️⃣ Authenticate user (email + password)
         $request->authenticate();
         $request->session()->regenerate();
 
         $user = Auth::user();
 
-        // 2️⃣ OTP ONLY FIRST LOGIN
+        /*
+        |--------------------------------------------------------------------------
+        | OTP CHECK
+        |--------------------------------------------------------------------------
+        */
         if (!$user->is_otp_verified) {
 
             $otp = rand(100000, 999999);
@@ -43,9 +40,8 @@ class AuthenticatedSessionController extends Controller
                 'expires_at' => now()->addMinutes(5),
             ]);
 
-            Mail::raw("Your login OTP is: $otp", function ($mail) use ($user) {
-                $mail->to($user->email)
-                     ->subject('Login OTP Verification');
+            Mail::raw("Your login OTP is: {$otp}", function ($mail) use ($user) {
+                $mail->to($user->email)->subject('Login OTP Verification');
             });
 
             Auth::logout();
@@ -54,29 +50,49 @@ class AuthenticatedSessionController extends Controller
             return redirect()->route('otp.page');
         }
 
-        // 3️⃣ ROLE BASED REDIRECT
-        // ✅ Normal users have 'web' guard role
-        if ($user->hasRole('user')) {
+        /*
+        |--------------------------------------------------------------------------
+        | ✅ ROLE WISE REDIRECT (FINAL)
+        |--------------------------------------------------------------------------
+        */
+
+        // SUPER ADMIN
+        if ($user->roles->contains('name', 'super-admin')) {
+            return redirect()->route('admin.dashboard');
+        }
+
+        // ADMIN
+        if ($user->roles->contains('name', 'admin')) {
+            return redirect()->route('admin.dashboard');
+        }
+
+        // MANAGER
+        if ($user->roles->contains('name', 'manager')) {
+            return redirect()->route('manager.dashboard');
+        }
+
+        // USER
+        if ($user->roles->contains('name', 'user')) {
             return redirect()->route('dashboard');
         }
 
-        // ❌ Agar user ko role nahi hai
+        // SAFETY
         Auth::logout();
         return redirect('/login')->withErrors([
-            'email' => 'Role not assigned. Contact admin.',
+            'email' => 'Role not assigned.',
         ]);
     }
 
     /**
-     * Destroy an authenticated session
+     * ✅ LOGOUT (FIXED)
      */
     public function destroy(Request $request): RedirectResponse
     {
-        Auth::guard('web')->logout();
+        Auth::logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect('/login');
     }
 }

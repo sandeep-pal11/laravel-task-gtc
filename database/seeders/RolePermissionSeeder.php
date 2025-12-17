@@ -5,109 +5,144 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\PermissionRegistrar;
 use App\Models\User;
-use App\Models\Admin;
+use Illuminate\Support\Facades\Hash;
 
 class RolePermissionSeeder extends Seeder
 {
-    public function run()
+    public function run(): void
     {
-        // Reset cached roles and permissions
-        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // ========================================
-        // 🔹 ADMIN GUARD PERMISSIONS & ROLES
-        // ========================================
-        $adminPermissions = [
-            'view-users', 'create-users', 'edit-users', 'delete-users',
-            'view-cities', 'create-cities', 'edit-cities', 'delete-cities',
-            'view-states', 'create-states', 'edit-states', 'delete-states',
-            'view-countries', 'create-countries', 'edit-countries', 'delete-countries',
+        /*
+        |--------------------------------------------------------------------------
+        | PERMISSIONS
+        |--------------------------------------------------------------------------
+        */
+        $permissions = [
+            'users.view',
+            'users.create',
+            'users.edit',
+            'users.delete',
+            'countries.view',
+            'countries.create',
+            'countries.edit',
+            'countries.delete',
+            'states.view',
+            'states.create',
+            'states.edit',
+            'states.delete',
+            'cities.view',
+            'cities.create',
+            'cities.edit',
+            'cities.delete',
         ];
 
-        foreach ($adminPermissions as $permission) {
+        foreach ($permissions as $permission) {
             Permission::firstOrCreate([
                 'name' => $permission,
-                'guard_name' => 'admin'
+                'guard_name' => 'web',
             ]);
         }
 
-        // Admin Roles
-        $superAdmin = Role::firstOrCreate(['name' => 'super-admin', 'guard_name' => 'admin']);
-        $admin = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'admin']);
-        $manager = Role::firstOrCreate(['name' => 'manager', 'guard_name' => 'admin']);
+        /*
+        |--------------------------------------------------------------------------
+        | ROLES
+        |--------------------------------------------------------------------------
+        */
+        $superAdmin = Role::firstOrCreate([
+            'name' => 'super-admin',
+            'guard_name' => 'web',
+        ]);
 
-        // Super Admin ko saare permissions
-        $superAdmin->syncPermissions(Permission::where('guard_name', 'admin')->get());
+        $admin = Role::firstOrCreate([
+            'name' => 'admin',
+            'guard_name' => 'web',
+        ]);
 
-        // Admin ko limited permissions
+        $manager = Role::firstOrCreate([
+            'name' => 'manager',
+            'guard_name' => 'web',
+        ]);
+        $userRole = Role::firstOrCreate([
+            'name' => 'user',
+            'guard_name' => 'web',
+        ]);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | ASSIGN PERMISSIONS
+        |--------------------------------------------------------------------------
+        */
+
+        // Super Admin → ALL
+        $superAdmin->syncPermissions(Permission::all());
+
+        // Admin → Full CRUD except user delete
         $admin->syncPermissions([
-            'view-users', 'view-cities', 'view-states', 'view-countries',
-            'create-cities', 'edit-cities'
+            'users.view',
+            'users.create',
+            'users.edit',
+            'countries.view',
+            'countries.create',
+            'countries.edit',
+            'countries.delete',
+            'states.view',
+            'states.create',
+            'states.edit',
+            'states.delete',
+            'cities.view',
+            'cities.create',
+            'cities.edit',
+            'cities.delete',
         ]);
 
-        // Manager ko kuch permissions
+        // Manager → View + Create only
         $manager->syncPermissions([
-            'view-users', 'create-users', 'edit-users',
-            'view-cities', 'create-cities'
+            'countries.view',
+            'countries.create',
+            'states.view',
+            'states.create',
+            'cities.view',
+            'cities.create',
         ]);
 
-        // ========================================
-        // 🔹 WEB GUARD ROLES (FOR NORMAL USERS)
-        // ========================================
-        $userRole = Role::firstOrCreate(['name' => 'user', 'guard_name' => 'web']);
+        /*
+        |--------------------------------------------------------------------------
+        | USERS
+        |--------------------------------------------------------------------------
+        */
 
-        // ========================================
-        // 🔹 CREATE DEFAULT ADMIN USERS (admin guard)
-        // ========================================
-        $superAdminUser = Admin::firstOrCreate(
-            ['email' => 'superadmin@example.com'],
+        $super = User::firstOrCreate(
+            ['email' => 'superadmin@test.com'],
             [
                 'name' => 'Super Admin',
-                'password' => bcrypt('password123'),
-                'email_verified_at' => now(),
-            ]
-        );
-        // ✅ Use setGuard() before assigning role
-        $superAdminUser->guard_name = 'admin';
-        $superAdminUser->assignRole('super-admin');
-
-        $adminUser = Admin::firstOrCreate(
-            ['email' => 'admin@example.com'],
-            [
-                'name' => 'Admin User',
-                'password' => bcrypt('password123'),
-                'email_verified_at' => now(),
-            ]
-        );
-        $adminUser->guard_name = 'admin';
-        $adminUser->assignRole('admin');
-
-        $managerUser = Admin::firstOrCreate(
-            ['email' => 'manager@example.com'],
-            [
-                'name' => 'Manager User',
-                'password' => bcrypt('password123'),
-                'email_verified_at' => now(),
-            ]
-        );
-        $managerUser->guard_name = 'admin';
-        $managerUser->assignRole('manager');
-
-        // ========================================
-        // 🔹 CREATE DEFAULT NORMAL USER (web guard)
-        // ========================================
-        $normalUser = User::firstOrCreate(
-            ['email' => 'user@example.com'],
-            [
-                'name' => 'Normal User',
-                'password' => bcrypt('password123'),
+                'password' => Hash::make('password'),
                 'is_otp_verified' => true,
             ]
         );
-        // ✅ User already has guard_name = 'web' in model
-        $normalUser->assignRole('user');
+        $super->syncRoles('super-admin');
 
-        $this->command->info('✅ Roles & Permissions created successfully!');
+        $adminUser = User::firstOrCreate(
+            ['email' => 'admin@test.com'],
+            [
+                'name' => 'Admin',
+                'password' => Hash::make('password'),
+                'is_otp_verified' => true,
+            ]
+        );
+        $adminUser->syncRoles('admin');
+
+        $managerUser = User::firstOrCreate(
+            ['email' => 'manager@test.com'],
+            [
+                'name' => 'Manager',
+                'password' => Hash::make('password'),
+                'is_otp_verified' => true,
+            ]
+        );
+        $managerUser->syncRoles('manager');
     }
 }
