@@ -3,37 +3,60 @@
 @section('content')
 <h3>States</h3>
 
-<a href="{{ route('admin.states.create') }}" class="btn btn-primary mb-2">
-    Add State
+@can('states.create')
+<a href="{{ route('admin.states.create') }}" class="btn btn-primary mb-3">
+    + Add State
 </a>
+@endcan
 
-<table class="table table-bordered">
-<tr>
-    <th>ID</th>
-    <th>State</th>
-    <th>Country</th>
-    <th>Action</th>
-</tr>
-
-@foreach($states as $s)
-<tr>
-    <td>{{ $s->id }}</td>
-    <td>{{ $s->name }}</td>
-    <td>{{ $s->country->name }}</td>
-    <td>
-        <a href="{{ route('admin.states.edit', $s) }}"
-           class="btn btn-warning btn-sm">
-           Edit
-        </a>
-
-        <form action="{{ route('admin.states.destroy', $s) }}"
-              method="POST" class="d-inline">
-            @csrf
-            @method('DELETE')
-            <button class="btn btn-danger btn-sm">Delete</button>
-        </form>
-    </td>
-</tr>
-@endforeach
+<table class="table table-bordered" id="statesTable">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>State</th>
+            <th>Country</th>
+            <th>Action</th>
+        </tr>
+    </thead>
 </table>
+
+{{-- JS --}}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+$(function () {
+
+    $('#statesTable').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: "{{ route('admin.states.index') }}",
+        columns: [
+            { data: 'DT_RowIndex', orderable:false, searchable:false },
+            { data: 'name' },
+            { data: 'country' },
+            { data: 'action', orderable:false, searchable:false },
+        ]
+    });
+
+    $(document).on('click','.delete-btn',function(){
+        let form = $(this).closest('form');
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'State will be deleted!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit();
+            }
+        });
+    });
+
+});
+</script>
 @endsection

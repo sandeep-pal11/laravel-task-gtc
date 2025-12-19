@@ -3,8 +3,7 @@
 @section('content')
 <h3>Edit State</h3>
 
-<form method="POST"
-      action="{{ route('admin.states.update',$state) }}">
+<form method="POST" action="{{ route('admin.states.update',$state) }}">
     @csrf
     @method('PUT')
 

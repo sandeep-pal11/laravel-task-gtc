@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
+
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\OtpController;
 use App\Http\Controllers\SocialAuthController;
@@ -17,6 +19,13 @@ use App\Http\Controllers\Admin\CityController;
 */
 Route::get('/', fn () => view('welcome'));
 
+Route::get('/force-logout', function () {
+    Auth::logout();
+    request()->session()->invalidate();
+    request()->session()->regenerateToken();
+    return redirect('/login');
+});
+
 /*
 |--------------------------------------------------------------------------
 | OTP
@@ -27,7 +36,7 @@ Route::post('/verify-otp', [OtpController::class, 'verify'])->name('otp.verify')
 
 /*
 |--------------------------------------------------------------------------
-| USER (ROLE: user)
+| USER
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth','role:user'])->group(function () {
@@ -47,19 +56,13 @@ Route::middleware(['auth','role:user'])->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| MANAGER (ROLE: manager)
+| MANAGER (READ ONLY)
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth','role:manager'])->group(function () {
 
     Route::get('/manager/dashboard', fn () => view('manager.dashboard'))
         ->name('manager.dashboard');
-
-    Route::get('/manager/countries', [CountryController::class, 'index'])
-        ->name('manager.countries');
-
-    Route::get('/manager/states', [StateController::class, 'index'])
-        ->name('manager.states');
 
     Route::get('/manager/cities', [CityController::class, 'index'])
         ->name('manager.cities');
@@ -75,13 +78,13 @@ Route::prefix('admin')
     ->middleware(['auth','role:admin|super-admin'])
     ->group(function () {
 
-    Route::get('/dashboard', fn () => view('admin.dashboard'))
-        ->name('dashboard');
+        Route::get('/dashboard', fn () => view('admin.dashboard'))
+            ->name('dashboard');
 
-    Route::resource('users', UserController::class);
-    Route::resource('countries', CountryController::class);
-    Route::resource('states', StateController::class);
-    Route::resource('cities', CityController::class);
+        Route::resource('users', UserController::class);
+        Route::resource('countries', CountryController::class);
+        Route::resource('states', StateController::class);
+        Route::resource('cities', CityController::class);
 });
 
 /*

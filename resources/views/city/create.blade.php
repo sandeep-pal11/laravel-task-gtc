@@ -3,6 +3,7 @@
 @section('content')
 <h3>Add City</h3>
 
+@can('cities.create')
 <form method="POST" action="{{ route('admin.cities.store') }}">
     @csrf
 
@@ -14,8 +15,12 @@
         @endforeach
     </select>
 
-    <input type="text" name="name" class="form-control mb-2" placeholder="City name">
+    <input type="text" name="name" class="form-control mb-2"
+           placeholder="City name">
 
     <button class="btn btn-success">Save</button>
 </form>
+@else
+<div class="alert alert-danger">No permission</div>
+@endcan
 @endsection

@@ -3,7 +3,8 @@
 @section('content')
 <h3>Edit City</h3>
 
-<form method="POST" action="{{ route('admin.cities.update', $city) }}">
+@can('cities.edit')
+<form method="POST" action="{{ route('admin.cities.update',$city) }}">
     @csrf
     @method('PUT')
 
@@ -16,11 +17,13 @@
         @endforeach
     </select>
 
-    <input type="text"
-           name="name"
+    <input type="text" name="name"
            value="{{ $city->name }}"
            class="form-control mb-2">
 
     <button class="btn btn-success">Update</button>
 </form>
+@else
+<div class="alert alert-danger">No permission</div>
+@endcan
 @endsection
