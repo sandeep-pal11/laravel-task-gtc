@@ -1,8 +1,10 @@
 <?php
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ProfileController;
+
 use App\Http\Controllers\OtpController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SocialAuthController;
 
 use App\Http\Controllers\Admin\UserController;
@@ -16,6 +18,13 @@ use App\Http\Controllers\Admin\CityController;
 |--------------------------------------------------------------------------
 */
 Route::get('/', fn () => view('welcome'));
+
+Route::get('/force-logout', function () {
+    Auth::logout();
+    request()->session()->invalidate();
+    request()->session()->regenerateToken();
+    return redirect('/login');
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -55,33 +64,36 @@ Route::middleware(['auth','role:manager'])->group(function () {
     Route::get('/manager/dashboard', fn () => view('manager.dashboard'))
         ->name('manager.dashboard');
 
-    Route::get('/manager/countries', [CountryController::class, 'index'])
-        ->name('manager.countries');
-
-    Route::get('/manager/states', [StateController::class, 'index'])
-        ->name('manager.states');
-
-    Route::get('/manager/cities', [CityController::class, 'index'])
-        ->name('manager.cities');
+    /*
+     * ❗ Manager CRUD ke liye alag routes nahi
+     * ❗ Manager SAME admin routes use karega
+     * ❗ Permission middleware controller me handle karega
+     */
 });
 
 /*
 |--------------------------------------------------------------------------
-| ADMIN + SUPER ADMIN
+| ADMIN + SUPER ADMIN + MANAGER (PERMISSION BASED)
 |--------------------------------------------------------------------------
 */
 Route::prefix('admin')
     ->name('admin.')
-    ->middleware(['auth','role:admin|super-admin'])
+    ->middleware(['auth'])
     ->group(function () {
 
+    // Admin dashboard (sirf admin/super-admin)
     Route::get('/dashboard', fn () => view('admin.dashboard'))
+        ->middleware('role:admin|super-admin')
         ->name('dashboard');
 
-    Route::resource('users', UserController::class);
+    /*
+     * CRUD routes
+     * Access controller ke permission middleware se control hoga
+     */
     Route::resource('countries', CountryController::class);
     Route::resource('states', StateController::class);
     Route::resource('cities', CityController::class);
+    Route::resource('users', UserController::class);
 });
 
 /*

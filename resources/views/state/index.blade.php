@@ -3,37 +3,71 @@
 @section('content')
 <h3>States</h3>
 
-<a href="{{ route('admin.states.create') }}" class="btn btn-primary mb-2">
+@can('states.create')
+<a href="{{ route('admin.states.create') }}"
+   class="btn btn-primary mb-2">
     Add State
 </a>
+@endcan
 
-<table class="table table-bordered">
-<tr>
-    <th>ID</th>
-    <th>State</th>
-    <th>Country</th>
-    <th>Action</th>
-</tr>
+<table class="table table-bordered" id="states-table">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>State</th>
+            <th>Country</th>
 
-@foreach($states as $s)
-<tr>
-    <td>{{ $s->id }}</td>
-    <td>{{ $s->name }}</td>
-    <td>{{ $s->country->name }}</td>
-    <td>
-        <a href="{{ route('admin.states.edit', $s) }}"
-           class="btn btn-warning btn-sm">
-           Edit
-        </a>
-
-        <form action="{{ route('admin.states.destroy', $s) }}"
-              method="POST" class="d-inline">
-            @csrf
-            @method('DELETE')
-            <button class="btn btn-danger btn-sm">Delete</button>
-        </form>
-    </td>
-</tr>
-@endforeach
+            {{-- Action header sirf admin ke liye --}}
+            @canany(['states.edit','states.delete'])
+                <th>Action</th>
+            @endcanany
+        </tr>
+    </thead>
 </table>
 @endsection
+
+@push('scripts')
+<script>
+$(function () {
+
+    let columns = [
+        { data: 'DT_RowIndex', orderable:false, searchable:false },
+        { data: 'name', name: 'name' },
+        { data: 'country', name: 'country.name' },
+    ];
+
+    // Action column sirf admin/super-admin
+    @canany(['states.edit','states.delete'])
+        columns.push({
+            data: 'action',
+            orderable:false,
+            searchable:false
+        });
+    @endcanany
+
+    $('#states-table').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: "{{ route('admin.states.index') }}",
+        columns: columns
+    });
+
+    // SweetAlert delete
+    $(document).on('click','.delete-btn',function () {
+        let form = $(this).closest('form');
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'This record will be deleted!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, delete it'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit();
+            }
+        });
+    });
+
+});
+</script>
+@endpush
