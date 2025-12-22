@@ -4,7 +4,8 @@
 <h3>Cities</h3>
 
 @can('cities.create')
-<a href="{{ route('admin.cities.create') }}" class="btn btn-primary mb-2">
+<a href="{{ route('admin.cities.create') }}"
+   class="btn btn-primary mb-2">
     Add City
 </a>
 @endcan
@@ -17,7 +18,6 @@
             <th>State</th>
             <th>Country</th>
 
-            {{-- ✅ Action header sirf admin/super-admin ke liye --}}
             @canany(['cities.edit','cities.delete'])
                 <th>Action</th>
             @endcanany
@@ -30,44 +30,64 @@
 <script>
 $(function () {
 
-    let columns = [
-        { data: 'DT_RowIndex', orderable:false, searchable:false },
-        { data: 'name', name: 'name' },
-        { data: 'state', name: 'state.name' },
-        { data: 'country', name: 'state.country.name' },
-    ];
-
-    // ✅ Action column JS me bhi sirf admin ke liye
-    @canany(['cities.edit','cities.delete'])
-        columns.push({
-            data: 'action',
-            orderable:false,
-            searchable:false
-        });
-    @endcanany
-
-    $('#cities-table').DataTable({
+    let table = $('#cities-table').DataTable({
         processing: true,
         serverSide: true,
         ajax: "{{ route('admin.cities.index') }}",
-        columns: columns
+
+        dom: 'Bfrtip',
+        buttons: [
+            { extend:'csvHtml5', title:'Cities', className:'btn btn-secondary btn-sm' },
+            { extend:'pdfHtml5', title:'Cities', className:'btn btn-danger btn-sm' }
+        ],
+
+        columns: [
+            { data:'DT_RowIndex', orderable:false, searchable:false },
+            { data:'name' },
+            { data:'state' },
+            { data:'country' },
+            @canany(['cities.edit','cities.delete'])
+            { data:'action', orderable:false, searchable:false }
+            @endcanany
+        ]
     });
 
-    // SweetAlert delete
+    // 🔴 delete
     $(document).on('click','.delete-btn',function () {
         let form = $(this).closest('form');
+
         Swal.fire({
-            title: 'Are you sure?',
-            text: 'This record will be deleted!',
+            title: 'Delete?',
             icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, delete it'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                form.submit();
+            showCancelButton: true
+        }).then(res=>{
+            if(res.isConfirmed){
+                $.post(form.attr('action'), form.serialize(), function(){
+                    table.ajax.reload();
+                });
             }
         });
     });
+
+    // ♻ restore
+    $(document).on('click','.restore-btn',function () {
+        let id = $(this).data('id');
+
+        Swal.fire({
+            title: 'Restore?',
+            icon: 'question',
+            showCancelButton: true
+        }).then(res=>{
+            if(res.isConfirmed){
+                $.post("{{ url('admin/cities') }}/"+id+"/restore", {
+                    _token: "{{ csrf_token() }}"
+                }, function(){
+                    table.ajax.reload();
+                });
+            }
+        });
+    });
+
 });
 </script>
 @endpush

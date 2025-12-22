@@ -15,22 +15,30 @@ class CountryController extends Controller
         $this->middleware('permission:countries.view')->only('index');
         $this->middleware('permission:countries.create')->only(['create','store']);
         $this->middleware('permission:countries.edit')->only(['edit','update']);
-        $this->middleware('permission:countries.delete')->only('destroy');
+        $this->middleware('permission:countries.delete')->only(['destroy','restore']);
     }
 
     public function index(Request $request)
     {
         if ($request->ajax()) {
 
-            $countries = Country::query();
+            // ✅ withTrashed so deleted rows bhi aaye
+            $countries = Country::withTrashed();
 
-            $datatable = DataTables::of($countries)
-                ->addIndexColumn();
+            return DataTables::of($countries)
+                ->addIndexColumn()
+                ->addColumn('action', function ($c) {
 
-            // 👉 ACTION column sirf admin / super-admin
-            if (Gate::any(['countries.edit','countries.delete'])) {
-                $datatable->addColumn('action', function ($c) {
+                    // 🔹 Agar deleted hai → sirf Restore
+                    if ($c->deleted_at) {
+                        return '
+                        <button data-id="'.$c->id.'"
+                                class="btn btn-success btn-sm restore-btn">
+                            Restore
+                        </button>';
+                    }
 
+                    // 🔹 Normal row → Edit + Delete
                     $btn = '';
 
                     if (Gate::allows('countries.edit')) {
@@ -55,10 +63,8 @@ class CountryController extends Controller
 
                     return $btn;
                 })
-                ->rawColumns(['action']);
-            }
-
-            return $datatable->make(true);
+                ->rawColumns(['action'])
+                ->make(true);
         }
 
         return view('country.index');
@@ -71,16 +77,12 @@ class CountryController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|min:2'
-        ]);
+        $request->validate(['name'=>'required|min:2']);
 
-        Country::create([
-            'name' => $request->name
-        ]);
+        Country::create(['name'=>$request->name]);
 
         return redirect()->route('admin.countries.index')
-            ->with('success','Country created successfully');
+            ->with('success','Country created');
     }
 
     public function edit(Country $country)
@@ -90,23 +92,27 @@ class CountryController extends Controller
 
     public function update(Request $request, Country $country)
     {
-        $request->validate([
-            'name' => 'required|min:2'
-        ]);
+        $request->validate(['name'=>'required|min:2']);
 
-        $country->update([
-            'name' => $request->name
-        ]);
+        $country->update(['name'=>$request->name]);
 
         return redirect()->route('admin.countries.index')
-            ->with('success','Country updated successfully');
+            ->with('success','Country updated');
     }
 
+    // 🔴 Soft delete
     public function destroy(Country $country)
     {
         $country->delete();
 
-        return redirect()->route('admin.countries.index')
-            ->with('success','Country deleted successfully');
+        return response()->json(['status'=>true]);
+    }
+
+    // ♻ Restore
+    public function restore($id)
+    {
+        Country::onlyTrashed()->findOrFail($id)->restore();
+
+        return response()->json(['status'=>true]);
     }
 }

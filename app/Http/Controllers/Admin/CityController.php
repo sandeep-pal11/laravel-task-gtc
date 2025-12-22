@@ -16,23 +16,30 @@ class CityController extends Controller
         $this->middleware('permission:cities.view')->only('index');
         $this->middleware('permission:cities.create')->only(['create','store']);
         $this->middleware('permission:cities.edit')->only(['edit','update']);
-        $this->middleware('permission:cities.delete')->only('destroy');
+        $this->middleware('permission:cities.delete')->only(['destroy','restore']);
     }
 
     public function index(Request $request)
     {
         if ($request->ajax()) {
 
-            $cities = City::with('state.country')->select('cities.*');
+            // ✅ withTrashed SAME PATTERN
+            $cities = City::withTrashed()->with('state.country');
 
-            $datatable = DataTables::of($cities)
+            return DataTables::of($cities)
                 ->addIndexColumn()
                 ->addColumn('state', fn ($c) => $c->state->name ?? '-')
-                ->addColumn('country', fn ($c) => $c->state->country->name ?? '-');
+                ->addColumn('country', fn ($c) => $c->state->country->name ?? '-')
+                ->addColumn('action', function ($c) {
 
-            // ✅ ACTION COLUMN SIRF ADMIN / SUPER-ADMIN KE LIYE
-            if (Gate::any(['cities.edit','cities.delete'])) {
-                $datatable->addColumn('action', function ($c) {
+                    // 🔁 Deleted → Restore only
+                    if ($c->deleted_at) {
+                        return '
+                        <button data-id="'.$c->id.'"
+                                class="btn btn-success btn-sm restore-btn">
+                            Restore
+                        </button>';
+                    }
 
                     $btn = '';
 
@@ -58,10 +65,8 @@ class CityController extends Controller
 
                     return $btn;
                 })
-                ->rawColumns(['action']);
-            }
-
-            return $datatable->make(true);
+                ->rawColumns(['action'])
+                ->make(true);
         }
 
         return view('city.index');
@@ -76,40 +81,46 @@ class CityController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'state_id' => 'required|exists:states,id',
-            'name'     => 'required|min:2',
+            'state_id' => 'required',
+            'name' => 'required|min:2'
         ]);
 
         City::create($request->only('state_id','name'));
 
         return redirect()->route('admin.cities.index')
-            ->with('success','City created successfully');
+            ->with('success','City created');
     }
 
     public function edit(City $city)
     {
-        $states = State::all();
+        $states = State::with('country')->get();
         return view('city.edit', compact('city','states'));
     }
 
     public function update(Request $request, City $city)
     {
         $request->validate([
-            'state_id' => 'required|exists:states,id',
-            'name'     => 'required|min:2',
+            'state_id' => 'required',
+            'name' => 'required|min:2'
         ]);
 
         $city->update($request->only('state_id','name'));
 
         return redirect()->route('admin.cities.index')
-            ->with('success','City updated successfully');
+            ->with('success','City updated');
     }
 
+    // 🔴 Soft delete
     public function destroy(City $city)
     {
         $city->delete();
+        return response()->json(['status'=>true]);
+    }
 
-        return redirect()->route('admin.cities.index')
-            ->with('success','City deleted successfully');
+    // ♻ Restore
+    public function restore($id)
+    {
+        City::onlyTrashed()->findOrFail($id)->restore();
+        return response()->json(['status'=>true]);
     }
 }

@@ -16,22 +16,29 @@ class StateController extends Controller
         $this->middleware('permission:states.view')->only('index');
         $this->middleware('permission:states.create')->only(['create','store']);
         $this->middleware('permission:states.edit')->only(['edit','update']);
-        $this->middleware('permission:states.delete')->only('destroy');
+        $this->middleware('permission:states.delete')->only(['destroy','restore']);
     }
 
     public function index(Request $request)
     {
         if ($request->ajax()) {
 
-            $states = State::with('country')->select('states.*');
+            // ✅ SAME AS COUNTRY
+            $states = State::withTrashed()->with('country');
 
-            $datatable = DataTables::of($states)
+            return DataTables::of($states)
                 ->addIndexColumn()
-                ->addColumn('country', fn ($s) => $s->country->name ?? '-');
+                ->addColumn('country', fn ($s) => $s->country->name ?? '-')
+                ->addColumn('action', function ($s) {
 
-            // ✅ ACTION column sirf admin / super-admin ke liye
-            if (Gate::any(['states.edit','states.delete'])) {
-                $datatable->addColumn('action', function ($s) {
+                    // 🔁 Deleted → Restore only
+                    if ($s->deleted_at) {
+                        return '
+                        <button data-id="'.$s->id.'"
+                                class="btn btn-success btn-sm restore-btn">
+                            Restore
+                        </button>';
+                    }
 
                     $btn = '';
 
@@ -57,10 +64,8 @@ class StateController extends Controller
 
                     return $btn;
                 })
-                ->rawColumns(['action']);
-            }
-
-            return $datatable->make(true);
+                ->rawColumns(['action'])
+                ->make(true);
         }
 
         return view('state.index');
@@ -75,14 +80,14 @@ class StateController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'country_id' => 'required|exists:countries,id',
-            'name'       => 'required|min:2',
+            'country_id' => 'required',
+            'name' => 'required|min:2'
         ]);
 
         State::create($request->only('country_id','name'));
 
         return redirect()->route('admin.states.index')
-            ->with('success','State created successfully');
+            ->with('success','State created');
     }
 
     public function edit(State $state)
@@ -94,21 +99,27 @@ class StateController extends Controller
     public function update(Request $request, State $state)
     {
         $request->validate([
-            'country_id' => 'required|exists:countries,id',
-            'name'       => 'required|min:2',
+            'country_id' => 'required',
+            'name' => 'required|min:2'
         ]);
 
         $state->update($request->only('country_id','name'));
 
         return redirect()->route('admin.states.index')
-            ->with('success','State updated successfully');
+            ->with('success','State updated');
     }
 
+    // 🔴 Soft delete
     public function destroy(State $state)
     {
         $state->delete();
+        return response()->json(['status'=>true]);
+    }
 
-        return redirect()->route('admin.states.index')
-            ->with('success','State deleted successfully');
+    // ♻ Restore
+    public function restore($id)
+    {
+        State::onlyTrashed()->findOrFail($id)->restore();
+        return response()->json(['status'=>true]);
     }
 }

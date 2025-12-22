@@ -63,12 +63,6 @@ Route::middleware(['auth','role:manager'])->group(function () {
 
     Route::get('/manager/dashboard', fn () => view('manager.dashboard'))
         ->name('manager.dashboard');
-
-    /*
-     * ❗ Manager CRUD ke liye alag routes nahi
-     * ❗ Manager SAME admin routes use karega
-     * ❗ Permission middleware controller me handle karega
-     */
 });
 
 /*
@@ -81,19 +75,45 @@ Route::prefix('admin')
     ->middleware(['auth'])
     ->group(function () {
 
-    // Admin dashboard (sirf admin/super-admin)
-    Route::get('/dashboard', fn () => view('admin.dashboard'))
-        ->middleware('role:admin|super-admin')
-        ->name('dashboard');
+        /*
+        | Admin Dashboard
+        | Only admin / super-admin
+        */
+        Route::get('/dashboard', fn () => view('admin.dashboard'))
+            ->middleware('role:admin|super-admin')
+            ->name('dashboard');
 
-    /*
-     * CRUD routes
-     * Access controller ke permission middleware se control hoga
-     */
-    Route::resource('countries', CountryController::class);
-    Route::resource('states', StateController::class);
-    Route::resource('cities', CityController::class);
-    Route::resource('users', UserController::class);
+        /*
+        | CRUD Routes
+        | Access controlled by permission middleware in controllers
+        */
+        Route::resource('countries', CountryController::class);
+        Route::resource('states', StateController::class);
+        Route::resource('cities', CityController::class);
+        Route::resource('users', UserController::class);
+
+        /*
+        | SOFT DELETE – RESTORE ROUTES
+        */
+        Route::post(
+            'countries/{id}/restore',
+            [CountryController::class, 'restore']
+        )->name('countries.restore');
+
+        Route::post(
+            'states/{id}/restore',
+            [StateController::class, 'restore']
+        )->name('states.restore');
+        Route::post(
+    'cities/{id}/restore',
+    [CityController::class,'restore']
+)->name('cities.restore');
+Route::post(
+    'users/{id}/restore',
+    [UserController::class,'restore']
+)->name('users.restore');
+
+
 });
 
 /*

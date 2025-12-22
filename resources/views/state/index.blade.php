@@ -17,7 +17,6 @@
             <th>State</th>
             <th>Country</th>
 
-            {{-- Action header sirf admin ke liye --}}
             @canany(['states.edit','states.delete'])
                 <th>Action</th>
             @endcanany
@@ -30,40 +29,59 @@
 <script>
 $(function () {
 
-    let columns = [
-        { data: 'DT_RowIndex', orderable:false, searchable:false },
-        { data: 'name', name: 'name' },
-        { data: 'country', name: 'country.name' },
-    ];
-
-    // Action column sirf admin/super-admin
-    @canany(['states.edit','states.delete'])
-        columns.push({
-            data: 'action',
-            orderable:false,
-            searchable:false
-        });
-    @endcanany
-
-    $('#states-table').DataTable({
+    let table = $('#states-table').DataTable({
         processing: true,
         serverSide: true,
         ajax: "{{ route('admin.states.index') }}",
-        columns: columns
+
+        dom: 'Bfrtip',
+        buttons: [
+            { extend:'csvHtml5', title:'States', className:'btn btn-secondary btn-sm' },
+            { extend:'pdfHtml5', title:'States', className:'btn btn-danger btn-sm' }
+        ],
+
+        columns: [
+            { data:'DT_RowIndex', orderable:false, searchable:false },
+            { data:'name' },
+            { data:'country' },
+            @canany(['states.edit','states.delete'])
+            { data:'action', orderable:false, searchable:false }
+            @endcanany
+        ]
     });
 
-    // SweetAlert delete
+    // 🔴 delete
     $(document).on('click','.delete-btn',function () {
         let form = $(this).closest('form');
+
         Swal.fire({
-            title: 'Are you sure?',
-            text: 'This record will be deleted!',
+            title: 'Delete?',
             icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, delete it'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                form.submit();
+            showCancelButton: true
+        }).then(res=>{
+            if(res.isConfirmed){
+                $.post(form.attr('action'), form.serialize(), function(){
+                    table.ajax.reload();
+                });
+            }
+        });
+    });
+
+    // ♻ restore
+    $(document).on('click','.restore-btn',function () {
+        let id = $(this).data('id');
+
+        Swal.fire({
+            title: 'Restore?',
+            icon: 'question',
+            showCancelButton: true
+        }).then(res=>{
+            if(res.isConfirmed){
+                $.post("{{ url('admin/states') }}/"+id+"/restore", {
+                    _token: "{{ csrf_token() }}"
+                }, function(){
+                    table.ajax.reload();
+                });
             }
         });
     });
