@@ -4,68 +4,99 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
-use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Str;
-use Laravel\Socialite\Contracts\User as SocialUser; 
+use Laravel\Socialite\Facades\Socialite;
+use Laravel\Socialite\Two\AbstractProvider;
 
 class SocialAuthController extends Controller
 {
-    
-    // GOOGLE LOGIN
-    
+    /*
+    |--------------------------------------------------------------------------
+    | GOOGLE LOGIN
+    |--------------------------------------------------------------------------
+    */
+
     public function redirectToGoogle()
     {
-        return Socialite::driver('google')->redirect();
+        /** @var AbstractProvider $provider */
+        $provider = Socialite::driver('google');
+
+        return $provider
+            ->with([
+                'prompt' => 'select_account', // force account selection
+            ])
+            ->redirect();
     }
 
     public function handleGoogleCallback()
     {
-        /** @var SocialUser $googleUser */
         $googleUser = Socialite::driver('google')->user();
 
-        $user = User::firstOrCreate(
-            ['email' => (string) $googleUser->getEmail()], 
-            [
-                'name' => $googleUser->getName()
-                    ?? $googleUser->getNickname()
-                    ?? 'Google User',
-                'password' => bcrypt(Str::random(12)),
-                'role_id' => 4,
-                'is_otp_verified' => true,
-            ]
-        );
+        $user = User::where('email', $googleUser->getEmail())->first();
+
+        if ($user) {
+            Auth::login($user);
+            return redirect('/dashboard');
+        }
+
+        $user = User::create([
+            'name' => $googleUser->getName()
+                ?? $googleUser->getNickname()
+                ?? 'Google User',
+            'email' => $googleUser->getEmail(),
+            'password' => bcrypt(Str::random(12)),
+            'is_otp_verified' => true,
+        ]);
+
+        $user->assignRole('user');
 
         Auth::login($user);
 
         return redirect('/dashboard');
     }
 
-    // GITHUB LOGIN
-    
+    /*
+    |--------------------------------------------------------------------------
+    | GITHUB LOGIN
+    |--------------------------------------------------------------------------
+    */
+
     public function redirectToGithub()
     {
-        return Socialite::driver('github')->redirect();
+        /** @var AbstractProvider $provider */
+        $provider = Socialite::driver('github');
+
+        return $provider
+            ->with([
+                'login' => '', // force GitHub login/account screen
+            ])
+            ->redirect();
     }
 
     public function handleGithubCallback()
     {
-        /** @var SocialUser $githubUser */
         $githubUser = Socialite::driver('github')->user();
 
         $email = $githubUser->getEmail()
             ?? ($githubUser->getNickname() . '@github.local');
 
-        $user = User::firstOrCreate(
-            ['email' => (string) $email],
-            [
-                'name' => $githubUser->getName()
-                    ?? $githubUser->getNickname()
-                    ?? 'Github User',
-                'password' => bcrypt(Str::random(12)),
-                'role_id' => 4,
-                'is_otp_verified' => true,
-            ]
-        );
+        $user = User::where('email', $email)->first();
+
+        if ($user) {
+            Auth::login($user);
+            return redirect('/dashboard');
+        }
+
+        $user = User::create([
+            'name' => $githubUser->getName()
+                ?? $githubUser->getNickname()
+                ?? 'GitHub User',
+            'email' => $email,
+            'password' => bcrypt(Str::random(12)),
+            'is_otp_verified' => true,
+        ]);
+
+        $user->assignRole('user');
 
         Auth::login($user);
 

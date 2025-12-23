@@ -63,24 +63,24 @@ Route::prefix('admin')
     ->middleware(['auth'])
     ->group(function () {
 
-    
+
         //Admin Dashboard -> Only admin / super-admin
-        
+
         Route::get('/dashboard', fn() => view('admin.dashboard'))
             ->middleware('role:admin|super-admin')
             ->name('dashboard');
 
-    
+
         //CRUD Routes -> Access controlled by permission middleware in controllers
-        
+
         Route::resource('countries', CountryController::class);
         Route::resource('states', StateController::class);
         Route::resource('cities', CityController::class);
         Route::resource('users', UserController::class);
 
-        
+
         // SOFT DELETE – RESTORE ROUTES
-        
+
         Route::post(
             'countries/{id}/restore',
             [CountryController::class, 'restore']
