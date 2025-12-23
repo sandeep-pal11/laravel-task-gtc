@@ -2,22 +2,17 @@
 
 return [
 
-    /*
-    |--------------------------------------------------------------------------
-    | Authentication Defaults
-    |--------------------------------------------------------------------------
-    */
+
+    // Authentication Defaults
+
 
     'defaults' => [
         'guard' => env('AUTH_GUARD', 'web'),
         'passwords' => env('AUTH_PASSWORD_BROKER', 'users'),
     ],
 
-    /*
-    |--------------------------------------------------------------------------
-    | Authentication Guards
-    |--------------------------------------------------------------------------
-    */
+    //Authentication Guards
+
 
     'guards' => [
         'web' => [
@@ -25,18 +20,15 @@ return [
             'provider' => 'users',
         ],
 
-        // ✅ Admin Guard Add Karo
+        //  Admin Guard 
         'admin' => [
             'driver' => 'session',
             'provider' => 'admins',
         ],
     ],
 
-    /*
-    |--------------------------------------------------------------------------
-    | User Providers
-    |--------------------------------------------------------------------------
-    */
+    //User Providers
+
 
     'providers' => [
         'users' => [
@@ -44,18 +36,15 @@ return [
             'model' => env('AUTH_MODEL', App\Models\User::class),
         ],
 
-        // ✅ Admin Provider Add Karo
+        // Admin Provider Add Karo
         'admins' => [
             'driver' => 'eloquent',
             'model' => App\Models\Admin::class,
         ],
     ],
 
-    /*
-    |--------------------------------------------------------------------------
-    | Resetting Passwords
-    |--------------------------------------------------------------------------
-    */
+    //Resetting Passwords
+
 
     'passwords' => [
         'users' => [
@@ -64,8 +53,7 @@ return [
             'expire' => 60,
             'throttle' => 60,
         ],
-
-        // ✅ Admin Password Reset (Optional)
+        //  Admin Password Reset (Optional)
         'admins' => [
             'provider' => 'admins',
             'table' => 'password_reset_tokens',
@@ -74,11 +62,9 @@ return [
         ],
     ],
 
-    /*
-    |--------------------------------------------------------------------------
-    | Password Confirmation Timeout
-    |--------------------------------------------------------------------------
-    */
+
+    //Password Confirmation Timeout
+
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
