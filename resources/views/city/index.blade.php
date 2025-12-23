@@ -52,7 +52,7 @@ $(function () {
         ]
     });
 
-    // 🔴 delete
+    //  delete
     $(document).on('click','.delete-btn',function () {
         let form = $(this).closest('form');
 
@@ -69,7 +69,7 @@ $(function () {
         });
     });
 
-    // ♻ restore
+    // restore
     $(document).on('click','.restore-btn',function () {
         let id = $(this).data('id');
 

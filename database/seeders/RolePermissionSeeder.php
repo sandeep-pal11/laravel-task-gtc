@@ -15,11 +15,8 @@ class RolePermissionSeeder extends Seeder
     {
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
-        /*
-        |--------------------------------------------------------------------------
-        | PERMISSIONS
-        |--------------------------------------------------------------------------
-        */
+        //PERMISSIONS
+     
         $permissions = [
             'users.view',
             'users.create',
@@ -46,11 +43,8 @@ class RolePermissionSeeder extends Seeder
             ]);
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | ROLES
-        |--------------------------------------------------------------------------
-        */
+        //ROLES
+   
         $superAdmin = Role::firstOrCreate([
             'name' => 'super-admin',
             'guard_name' => 'web',
@@ -70,17 +64,12 @@ class RolePermissionSeeder extends Seeder
             'guard_name' => 'web',
         ]);
 
+        // ASSIGN PERMISSIONS
 
-        /*
-        |--------------------------------------------------------------------------
-        | ASSIGN PERMISSIONS
-        |--------------------------------------------------------------------------
-        */
-
-        // Super Admin → ALL
+        // Super Admin ALL
         $superAdmin->syncPermissions(Permission::all());
 
-        // Admin → Full CRUD except user delete
+        // Admin: Full CRUD except user delete
         $admin->syncPermissions([
             'users.view',
             'users.create',
@@ -99,7 +88,7 @@ class RolePermissionSeeder extends Seeder
             'cities.delete',
         ]);
 
-        // Manager → View + Create only
+        // Manager  View and Create only
         $manager->syncPermissions([
             'countries.view',
             'countries.create',
@@ -107,42 +96,6 @@ class RolePermissionSeeder extends Seeder
             'states.create',
             'cities.view',
             'cities.create',
-        ]);
-
-        /*
-        |--------------------------------------------------------------------------
-        | USERS
-        |--------------------------------------------------------------------------
-        */
-
-        $super = User::firstOrCreate(
-            ['email' => 'superadmin@test.com'],
-            [
-                'name' => 'Super Admin',
-                'password' => Hash::make('password'),
-                'is_otp_verified' => true,
-            ]
-        );
-        $super->syncRoles('super-admin');
-
-        $adminUser = User::firstOrCreate(
-            ['email' => 'admin@test.com'],
-            [
-                'name' => 'Admin',
-                'password' => Hash::make('password'),
-                'is_otp_verified' => true,
-            ]
-        );
-        $adminUser->syncRoles('admin');
-
-        $managerUser = User::firstOrCreate(
-            ['email' => 'manager@test.com'],
-            [
-                'name' => 'Manager',
-                'password' => Hash::make('password'),
-                'is_otp_verified' => true,
-            ]
-        );
-        $managerUser->syncRoles('manager');
+        ]);  
     }
 }

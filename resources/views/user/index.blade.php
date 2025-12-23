@@ -5,14 +5,13 @@
 
 @php $today = date('Y-m-d'); @endphp
 
+{{-- FILTERS --}}
 <div class="row mb-3">
     <div class="col-md-3">
         <select id="roleFilter" class="form-control">
             <option value="">All Roles</option>
             @foreach($roles as $role)
-                <option value="{{ $role->name }}">
-                    {{ ucfirst($role->name) }}
-                </option>
+                <option value="{{ $role->name }}">{{ ucfirst($role->name) }}</option>
             @endforeach
         </select>
     </div>
@@ -39,9 +38,7 @@
             <th>Name</th>
             <th>Email</th>
             <th>Roles</th>
-            @canany(['users.edit','users.delete'])
-                <th>Action</th>
-            @endcanany
+            <th>Action</th>
         </tr>
     </thead>
 </table>
@@ -56,51 +53,75 @@ $(function () {
         serverSide: true,
         ajax: {
             url: "{{ route('admin.users.index') }}",
-            data: d => {
-                d.role = $('#roleFilter').val();
+            data: function (d) {
+                d.role      = $('#roleFilter').val();
                 d.from_date = $('#fromDate').val();
-                d.to_date = $('#toDate').val();
+                d.to_date   = $('#toDate').val();
             }
         },
         columns: [
-            { data:'DT_RowIndex', orderable:false },
+            { data:'DT_RowIndex', orderable:false, searchable:false },
             { data:'name' },
             { data:'email' },
             { data:'roles', orderable:false },
-            @canany(['users.edit','users.delete'])
             { data:'action', orderable:false, searchable:false }
-            @endcanany
         ]
     });
 
-    $('#roleFilter, #fromDate, #toDate').change(() => table.ajax.reload());
+    // reload on filter
+    $('#roleFilter, #fromDate, #toDate').change(()=>table.ajax.reload());
 
-    $('#resetFilters').click(() => {
+    $('#resetFilters').click(()=>{
         $('#roleFilter,#fromDate,#toDate').val('');
         table.ajax.reload();
     });
 
-    /* 🔴 delete */
+    // 🔴 DELETE
     $(document).on('click','.delete-btn',function () {
         let form = $(this).closest('form');
-        Swal.fire({title:'Delete?',icon:'warning',showCancelButton:true})
-        .then(r=>{
-            if(r.isConfirmed){
-                $.post(form.attr('action'), form.serialize(), ()=>table.ajax.reload());
+
+        Swal.fire({
+            title: 'Delete user?',
+            icon: 'warning',
+            showCancelButton: true
+        }).then(res=>{
+            if(res.isConfirmed){
+                $.ajax({
+                    url: form.attr('action'),
+                    type: 'POST',
+                    data: form.serialize(),
+                    success: function (res) {
+                        Swal.fire('Success', res.message, 'success');
+                        table.ajax.reload();
+                    },
+                    error: function (xhr) {
+                        Swal.fire(
+                            'Blocked',
+                            xhr.responseJSON.message,
+                            'error'
+                        );
+                    }
+                });
             }
         });
     });
 
-    /* ♻ restore */
+    // ♻ RESTORE
     $(document).on('click','.restore-btn',function () {
         let id = $(this).data('id');
-        Swal.fire({title:'Restore?',icon:'question',showCancelButton:true})
-        .then(r=>{
-            if(r.isConfirmed){
-                $.post("{{ url('admin/users') }}/"+id+"/restore",
-                    {_token:"{{ csrf_token() }}"},
-                    ()=>table.ajax.reload()
-                );
+
+        Swal.fire({
+            title: 'Restore user?',
+            icon: 'question',
+            showCancelButton: true
+        }).then(res=>{
+            if(res.isConfirmed){
+                $.post("{{ url('admin/users') }}/"+id+"/restore", {
+                    _token: "{{ csrf_token() }}"
+                }, function(res){
+                    Swal.fire('Restored', res.message, 'success');
+                    table.ajax.reload();
+                });
             }
         });
     });

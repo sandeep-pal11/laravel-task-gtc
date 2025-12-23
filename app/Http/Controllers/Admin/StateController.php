@@ -7,6 +7,7 @@ use App\Models\State;
 use App\Models\Country;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 use Yajra\DataTables\Facades\DataTables;
 
 class StateController extends Controller
@@ -23,7 +24,6 @@ class StateController extends Controller
     {
         if ($request->ajax()) {
 
-            // ✅ SAME AS COUNTRY
             $states = State::withTrashed()->with('country');
 
             return DataTables::of($states)
@@ -31,13 +31,12 @@ class StateController extends Controller
                 ->addColumn('country', fn ($s) => $s->country->name ?? '-')
                 ->addColumn('action', function ($s) {
 
-                    // 🔁 Deleted → Restore only
                     if ($s->deleted_at) {
                         return '
-                        <button data-id="'.$s->id.'"
-                                class="btn btn-success btn-sm restore-btn">
-                            Restore
-                        </button>';
+                            <button data-id="'.$s->id.'"
+                                    class="btn btn-success btn-sm restore-btn">
+                                Restore
+                            </button>';
                     }
 
                     $btn = '';
@@ -77,17 +76,36 @@ class StateController extends Controller
         return view('state.create', compact('countries'));
     }
 
+    
+     // STORE
+     
     public function store(Request $request)
     {
-        $request->validate([
-            'country_id' => 'required',
-            'name' => 'required|min:2'
-        ]);
+        $request->validate(
+            [
+                'country_id' => 'required',
+                'name' => [
+                    'required',
+                    'min:2',
+                    Rule::unique('states')
+                        ->where(fn ($q) =>
+                            $q->where('country_id', $request->country_id)
+                        ),
+                ],
+            ],
+            [
+                'country_id.required' => 'Country is required',
+                'name.required'       => 'State name is required',
+                'name.min'            => 'Minimum 2 characters required',
+                'name.unique'         => 'This state already exists in selected country',
+            ]
+        );
 
         State::create($request->only('country_id','name'));
 
-        return redirect()->route('admin.states.index')
-            ->with('success','State created');
+        return redirect()
+            ->route('admin.states.index')
+            ->with('success','State created successfully');
     }
 
     public function edit(State $state)
@@ -96,27 +114,45 @@ class StateController extends Controller
         return view('state.edit', compact('state','countries'));
     }
 
+    
+     // UPDATE
+    
     public function update(Request $request, State $state)
     {
-        $request->validate([
-            'country_id' => 'required',
-            'name' => 'required|min:2'
-        ]);
+        $request->validate(
+            [
+                'country_id' => 'required',
+                'name' => [
+                    'required',
+                    'min:2',
+                    Rule::unique('states')
+                        ->where(fn ($q) =>
+                            $q->where('country_id', $request->country_id)
+                        )
+                        ->ignore($state->id),
+                ],
+            ],
+            [
+                'country_id.required' => 'Country is required',
+                'name.required'       => 'State name is required',
+                'name.min'            => 'Minimum 2 characters required',
+                'name.unique'         => 'This state already exists in selected country',
+            ]
+        );
 
         $state->update($request->only('country_id','name'));
 
-        return redirect()->route('admin.states.index')
-            ->with('success','State updated');
+        return redirect()
+            ->route('admin.states.index')
+            ->with('success','State updated successfully');
     }
 
-    // 🔴 Soft delete
     public function destroy(State $state)
     {
         $state->delete();
         return response()->json(['status'=>true]);
     }
 
-    // ♻ Restore
     public function restore($id)
     {
         State::onlyTrashed()->findOrFail($id)->restore();

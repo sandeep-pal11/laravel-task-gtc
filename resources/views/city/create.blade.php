@@ -2,34 +2,56 @@
 
 @section('content')
 @can('cities.create')
-<h3>Add City</h3>
 
-<form id="cityForm" method="POST"
+<h3 class="mb-3">Add City</h3>
+
+<form id="cityForm"
+      method="POST"
       action="{{ route('admin.cities.store') }}">
     @csrf
 
+    <!-- State -->
     <div class="mb-2">
-        <select name="state_id" class="form-control">
+        <select name="state_id"
+                class="form-control @error('state_id') is-invalid @enderror">
             <option value="">Select State</option>
             @foreach($states as $state)
-                <option value="{{ $state->id }}">
+                <option value="{{ $state->id }}"
+                    {{ old('state_id') == $state->id ? 'selected' : '' }}>
                     {{ $state->name }} ({{ $state->country->name }})
                 </option>
             @endforeach
         </select>
+
+        <!-- Client error -->
         <small class="text-danger error-state"></small>
+
+        <!-- Server error -->
+        @error('state_id')
+            <small class="text-danger">{{ $message }}</small>
+        @enderror
     </div>
 
+    <!-- City name -->
     <div class="mb-2">
         <input type="text"
                name="name"
-               class="form-control"
+               value="{{ old('name') }}"
+               class="form-control @error('name') is-invalid @enderror"
                placeholder="City name">
+
+        <!-- Client error -->
         <small class="text-danger error-name"></small>
+
+        <!-- Server error -->
+        @error('name')
+            <small class="text-danger">{{ $message }}</small>
+        @enderror
     </div>
 
     <button class="btn btn-success">Save</button>
 </form>
+
 @endcan
 @endsection
 
@@ -42,7 +64,6 @@ document.getElementById('cityForm').addEventListener('submit', function (e) {
     let state = this.state_id;
     let name  = this.name;
 
-    // reset
     state.classList.remove('is-invalid');
     name.classList.remove('is-invalid');
     document.querySelector('.error-state').innerText = '';

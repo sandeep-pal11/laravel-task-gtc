@@ -7,6 +7,7 @@ use App\Models\City;
 use App\Models\State;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 use Yajra\DataTables\Facades\DataTables;
 
 class CityController extends Controller
@@ -23,7 +24,6 @@ class CityController extends Controller
     {
         if ($request->ajax()) {
 
-            // ✅ withTrashed SAME PATTERN
             $cities = City::withTrashed()->with('state.country');
 
             return DataTables::of($cities)
@@ -32,13 +32,12 @@ class CityController extends Controller
                 ->addColumn('country', fn ($c) => $c->state->country->name ?? '-')
                 ->addColumn('action', function ($c) {
 
-                    // 🔁 Deleted → Restore only
                     if ($c->deleted_at) {
                         return '
-                        <button data-id="'.$c->id.'"
-                                class="btn btn-success btn-sm restore-btn">
-                            Restore
-                        </button>';
+                            <button data-id="'.$c->id.'"
+                                    class="btn btn-success btn-sm restore-btn">
+                                Restore
+                            </button>';
                     }
 
                     $btn = '';
@@ -78,17 +77,36 @@ class CityController extends Controller
         return view('city.create', compact('states'));
     }
 
+
+     // STORE
+
     public function store(Request $request)
     {
-        $request->validate([
-            'state_id' => 'required',
-            'name' => 'required|min:2'
-        ]);
+        $request->validate(
+            [
+                'state_id' => 'required',
+                'name' => [
+                    'required',
+                    'min:2',
+                    Rule::unique('cities')
+                        ->where(fn ($q) =>
+                            $q->where('state_id', $request->state_id)
+                        ),
+                ],
+            ],
+            [
+                'state_id.required' => 'State is required',
+                'name.required'     => 'City name is required',
+                'name.min'          => 'Minimum 2 characters required',
+                'name.unique'       => 'This city already exists in selected state',
+            ]
+        );
 
         City::create($request->only('state_id','name'));
 
-        return redirect()->route('admin.cities.index')
-            ->with('success','City created');
+        return redirect()
+            ->route('admin.cities.index')
+            ->with('success','City created successfully');
     }
 
     public function edit(City $city)
@@ -97,27 +115,50 @@ class CityController extends Controller
         return view('city.edit', compact('city','states'));
     }
 
+   
+     //UPDATE
+
     public function update(Request $request, City $city)
     {
-        $request->validate([
-            'state_id' => 'required',
-            'name' => 'required|min:2'
-        ]);
+        $request->validate(
+            [
+                'state_id' => 'required',
+                'name' => [
+                    'required',
+                    'min:2',
+                    Rule::unique('cities')
+                        ->where(fn ($q) =>
+                            $q->where('state_id', $request->state_id)
+                        )
+                        ->ignore($city->id),
+                ],
+            ],
+            [
+                'state_id.required' => 'State is required',
+                'name.required'     => 'City name is required',
+                'name.min'          => 'Minimum 2 characters required',
+                'name.unique'       => 'This city already exists in selected state',
+            ]
+        );
 
         $city->update($request->only('state_id','name'));
 
-        return redirect()->route('admin.cities.index')
-            ->with('success','City updated');
+        return redirect()
+            ->route('admin.cities.index')
+            ->with('success','City updated successfully');
     }
 
-    // 🔴 Soft delete
+   //  Soft delete
+
     public function destroy(City $city)
     {
         $city->delete();
         return response()->json(['status'=>true]);
     }
 
-    // ♻ Restore
+    
+     //Restore
+ 
     public function restore($id)
     {
         City::onlyTrashed()->findOrFail($id)->restore();

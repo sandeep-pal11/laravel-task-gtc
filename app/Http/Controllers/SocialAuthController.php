@@ -6,13 +6,13 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Str;
-use Laravel\Socialite\Contracts\User as SocialUser; // ✅ ADD THIS
+use Laravel\Socialite\Contracts\User as SocialUser; 
 
 class SocialAuthController extends Controller
 {
-    // ======================
+    
     // GOOGLE LOGIN
-    // ======================
+    
     public function redirectToGoogle()
     {
         return Socialite::driver('google')->redirect();
@@ -24,7 +24,7 @@ class SocialAuthController extends Controller
         $googleUser = Socialite::driver('google')->user();
 
         $user = User::firstOrCreate(
-            ['email' => (string) $googleUser->getEmail()], // ✅ METHOD, NOT PROPERTY
+            ['email' => (string) $googleUser->getEmail()], 
             [
                 'name' => $googleUser->getName()
                     ?? $googleUser->getNickname()
@@ -40,9 +40,8 @@ class SocialAuthController extends Controller
         return redirect('/dashboard');
     }
 
-    // ======================
     // GITHUB LOGIN
-    // ======================
+    
     public function redirectToGithub()
     {
         return Socialite::driver('github')->redirect();

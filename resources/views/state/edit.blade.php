@@ -2,7 +2,8 @@
 
 @section('content')
 @can('states.edit')
-<h3>Edit State</h3>
+
+<h3 class="mb-3">Edit State</h3>
 
 <form id="stateEditForm"
       method="POST"
@@ -10,28 +11,47 @@
     @csrf
     @method('PUT')
 
+    <!-- Country -->
     <div class="mb-2">
-        <select name="country_id" class="form-control">
-            @foreach($countries as $c)
-                <option value="{{ $c->id }}"
-                    @selected($state->country_id == $c->id)>
-                    {{ $c->name }}
+        <select name="country_id"
+                class="form-control @error('country_id') is-invalid @enderror">
+            @foreach($countries as $country)
+                <option value="{{ $country->id }}"
+                    {{ old('country_id', $state->country_id) == $country->id ? 'selected' : '' }}>
+                    {{ $country->name }}
                 </option>
             @endforeach
         </select>
+
+        <!-- Client error -->
         <small class="text-danger error-country"></small>
+
+        <!-- Server error -->
+        @error('country_id')
+            <small class="text-danger">{{ $message }}</small>
+        @enderror
     </div>
 
+    <!-- State name -->
     <div class="mb-2">
         <input type="text"
                name="name"
-               value="{{ $state->name }}"
-               class="form-control">
+               value="{{ old('name', $state->name) }}"
+               class="form-control @error('name') is-invalid @enderror"
+               placeholder="State name">
+
+        <!-- Client error -->
         <small class="text-danger error-name"></small>
+
+        <!-- Server error -->
+        @error('name')
+            <small class="text-danger">{{ $message }}</small>
+        @enderror
     </div>
 
     <button class="btn btn-success">Update</button>
 </form>
+
 @endcan
 @endsection
 

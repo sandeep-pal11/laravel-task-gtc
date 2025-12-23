@@ -20,6 +20,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'profile_photo',   
         'is_otp_verified',
     ];
 
@@ -34,5 +35,15 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    
+     // Accessor for profile photo URL
+     
+    public function getProfilePhotoUrlAttribute(): string
+    {
+        return $this->profile_photo
+            ? asset('storage/' . $this->profile_photo)
+            : asset('images/default-avatar.png');
     }
 }

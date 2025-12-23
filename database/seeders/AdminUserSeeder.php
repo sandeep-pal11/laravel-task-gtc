@@ -11,12 +11,12 @@ class AdminUserSeeder extends Seeder
 {
     public function run(): void
     {
-        // 🔹 Roles create (web guard)
+        //  Roles create (web guard)
         $superAdminRole = Role::firstOrCreate(['name' => 'super-admin', 'guard_name' => 'web']);
         $adminRole      = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
         $managerRole    = Role::firstOrCreate(['name' => 'manager', 'guard_name' => 'web']);
 
-        // 🔹 Super Admin User
+        // Super Admin User
         $superAdmin = User::firstOrCreate(
             ['email' => 'superadmin@gmail.com'],
             [
@@ -27,7 +27,7 @@ class AdminUserSeeder extends Seeder
         );
         $superAdmin->assignRole($superAdminRole);
 
-        // 🔹 Admin User
+        //  Admin User
         $admin = User::firstOrCreate(
             ['email' => 'admin@gmail.com'],
             [
@@ -38,7 +38,7 @@ class AdminUserSeeder extends Seeder
         );
         $admin->assignRole($adminRole);
 
-        // 🔹 Manager User
+        // Manager User
         $manager = User::firstOrCreate(
             ['email' => 'manager@gmail.com'],
             [

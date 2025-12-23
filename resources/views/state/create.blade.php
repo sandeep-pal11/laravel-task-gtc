@@ -2,31 +2,56 @@
 
 @section('content')
 @can('states.create')
-<h3>Add State</h3>
 
-<form id="stateForm" method="POST" action="{{ route('admin.states.store') }}">
+<h3 class="mb-3">Add State</h3>
+
+<form id="stateForm"
+      method="POST"
+      action="{{ route('admin.states.store') }}">
     @csrf
 
+    <!-- Country -->
     <div class="mb-2">
-        <select name="country_id" class="form-control">
+        <select name="country_id"
+                class="form-control @error('country_id') is-invalid @enderror">
             <option value="">Select Country</option>
             @foreach($countries as $country)
-                <option value="{{ $country->id }}">{{ $country->name }}</option>
+                <option value="{{ $country->id }}"
+                    {{ old('country_id') == $country->id ? 'selected' : '' }}>
+                    {{ $country->name }}
+                </option>
             @endforeach
         </select>
+
+        <!-- Client error -->
         <small class="text-danger error-country"></small>
+
+        <!-- Server error -->
+        @error('country_id')
+            <small class="text-danger">{{ $message }}</small>
+        @enderror
     </div>
 
+    <!-- State name -->
     <div class="mb-2">
         <input type="text"
                name="name"
-               class="form-control"
+               value="{{ old('name') }}"
+               class="form-control @error('name') is-invalid @enderror"
                placeholder="State name">
+
+        <!-- Client error -->
         <small class="text-danger error-name"></small>
+
+        <!-- Server error -->
+        @error('name')
+            <small class="text-danger">{{ $message }}</small>
+        @enderror
     </div>
 
     <button class="btn btn-success">Save</button>
 </form>
+
 @endcan
 @endsection
 
@@ -39,7 +64,6 @@ document.getElementById('stateForm').addEventListener('submit', function (e) {
     let country = this.country_id;
     let name    = this.name;
 
-    // reset
     country.classList.remove('is-invalid');
     name.classList.remove('is-invalid');
     document.querySelector('.error-country').innerText = '';

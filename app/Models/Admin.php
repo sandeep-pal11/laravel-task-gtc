@@ -11,7 +11,7 @@ class Admin extends Authenticatable
     use Notifiable, HasRoles;
 
     protected $guard = 'admin';
-    protected $guard_name = 'admin'; // ✅ Yeh important hai
+    protected $guard_name = 'admin'; 
 
     protected $fillable = [
         'name',

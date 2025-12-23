@@ -2,11 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Login | Laravel Auth</title>
+    <title>Login | {{ config('app.name') }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Google Font -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
     <style>
         * {
@@ -26,78 +29,85 @@
             width: 100%;
             max-width: 420px;
             background: #fff;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            padding: 34px;
+            border-radius: 16px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.2);
+            animation: fadeIn 0.6s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .login-box h2 {
             text-align: center;
-            margin-bottom: 10px;
+            margin-bottom: 6px;
             font-weight: 600;
         }
 
         .login-box p {
             text-align: center;
             color: #666;
-            margin-bottom: 25px;
+            margin-bottom: 26px;
             font-size: 14px;
         }
 
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 18px;
         }
 
         .form-group label {
             display: block;
-            font-size: 14px;
+            font-size: 13px;
             margin-bottom: 6px;
             font-weight: 500;
         }
 
         .form-group input {
             width: 100%;
-            padding: 11px 12px;
-            border-radius: 6px;
+            padding: 13px;
+            border-radius: 9px;
             border: 1px solid #ccc;
             font-size: 14px;
+            transition: 0.2s;
         }
 
         .form-group input:focus {
             outline: none;
             border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.15);
         }
 
         .remember {
             display: flex;
             align-items: center;
-            font-size: 14px;
-        }
-
-        .remember input {
-            margin-right: 6px;
+            font-size: 13px;
+            gap: 6px;
         }
 
         .login-btn {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             background: #667eea;
             color: #fff;
             border: none;
-            border-radius: 6px;
+            border-radius: 9px;
             font-size: 15px;
             font-weight: 500;
             cursor: pointer;
-            margin-top: 15px;
+            margin-top: 20px;
+            transition: 0.2s;
         }
 
         .login-btn:hover {
             background: #5a67d8;
+            transform: translateY(-1px);
         }
 
         .forgot {
             text-align: right;
-            margin-top: 8px;
+            margin-top: 6px;
         }
 
         .forgot a {
@@ -108,9 +118,9 @@
 
         .divider {
             text-align: center;
-            margin: 25px 0;
+            margin: 26px 0;
             position: relative;
-            font-size: 13px;
+            font-size: 12px;
             color: #999;
         }
 
@@ -132,12 +142,13 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 11px;
-            border-radius: 6px;
+            padding: 13px;
+            border-radius: 9px;
             font-size: 14px;
             font-weight: 500;
             text-decoration: none;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
+            transition: 0.2s;
         }
 
         .google {
@@ -161,30 +172,44 @@
 
         .error {
             color: #e53e3e;
-            font-size: 13px;
-            margin-top: 5px;
+            font-size: 12px;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .register-box {
+            text-align: center;
+            margin-top: 18px;
+            font-size: 14px;
+        }
+
+        .register-box a {
+            color: #667eea;
+            font-weight: 500;
+            text-decoration: none;
         }
     </style>
 </head>
 <body>
 
 <div class="login-box">
-    <h2>Welcome Back</h2>
-    <p>Login to your account</p>
 
-    <form method="POST" action="{{ route('login') }}">
+    <h2>Welcome Back </h2>
+    <p>Login to continue to your dashboard</p>
+
+    <form id="loginForm" method="POST" action="{{ route('login') }}">
         @csrf
 
         <div class="form-group">
-            <label>Email</label>
-            <input type="email" name="email" value="{{ old('email') }}" required>
-            @error('email') <div class="error">{{ $message }}</div> @enderror
+            <label>Email Address</label>
+            <input type="email" name="email" id="email">
+            <div class="error" id="emailError"></div>
         </div>
 
         <div class="form-group">
             <label>Password</label>
-            <input type="password" name="password" required>
-            @error('password') <div class="error">{{ $message }}</div> @enderror
+            <input type="password" name="password" id="password">
+            <div class="error" id="passwordError"></div>
         </div>
 
         <div class="remember">
@@ -193,24 +218,54 @@
         </div>
 
         <div class="forgot">
-            @if (Route::has('password.request'))
-                <a href="{{ route('password.request') }}">Forgot password?</a>
-            @endif
+            <a href="{{ route('password.request') }}">Forgot password?</a>
         </div>
 
-        <button class="login-btn">Login</button>
+        <button type="submit" class="login-btn">Login</button>
     </form>
 
     <div class="divider">OR</div>
 
-    <a href="{{ url('/auth/google') }}" class="social-btn google">
-        Continue with Google
-    </a>
+    <a href="{{ url('/auth/google') }}" class="social-btn google">Continue with Google</a>
+    <a href="{{ url('/auth/github') }}" class="social-btn github">Continue with GitHub</a>
 
-    <a href="{{ url('/auth/github') }}" class="social-btn github">
-        Continue with GitHub
-    </a>
+    <div class="register-box">
+        New here? <a href="{{ route('register') }}">Create an account</a>
+    </div>
+
 </div>
+
+<script>
+    $('#loginForm').on('submit', function (e) {
+        let valid = true;
+
+        $('.error').hide().text('');
+
+        const email = $('#email').val().trim();
+        const password = $('#password').val().trim();
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (email === '') {
+            $('#emailError').text('Email is required').show();
+            valid = false;
+        } else if (!emailPattern.test(email)) {
+            $('#emailError').text('Enter a valid email address').show();
+            valid = false;
+        }
+
+        if (password === '') {
+            $('#passwordError').text('Password is required').show();
+            valid = false;
+        } else if (password.length < 6) {
+            $('#passwordError').text('Password must be at least 6 characters').show();
+            valid = false;
+        }
+
+        if (!valid) {
+            e.preventDefault();
+        }
+    });
+</script>
 
 </body>
 </html>

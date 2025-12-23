@@ -1,64 +1,104 @@
-<section>
-    <header>
-        <h2 class="text-lg font-medium text-gray-900">
-            {{ __('Profile Information') }}
-        </h2>
+<section class="min-h-[70vh] flex items-center justify-center bg-gray-100">
 
-        <p class="mt-1 text-sm text-gray-600">
-            {{ __("Update your account's profile information and email address.") }}
-        </p>
-    </header>
+    <div class="bg-white w-full max-w-2xl rounded-xl shadow border border-gray-200">
 
-    <form id="send-verification" method="post" action="{{ route('verification.send') }}">
-        @csrf
-    </form>
-
-    <form method="post" action="{{ route('profile.update') }}" class="mt-6 space-y-6">
-        @csrf
-        @method('patch')
-
-        <div>
-            <x-input-label for="name" :value="__('Name')" />
-            <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name', $user->name)" required autofocus autocomplete="name" />
-            <x-input-error class="mt-2" :messages="$errors->get('name')" />
+        <!-- Header -->
+        <div class="px-6 py-4 border-b text-center">
+            <h2 class="text-lg font-semibold text-gray-800">
+                Profile Settings
+            </h2>
+            <p class="text-sm text-gray-500">
+                Update your profile photo and name
+            </p>
         </div>
 
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" name="email" type="email" class="mt-1 block w-full" :value="old('email', $user->email)" required autocomplete="username" />
-            <x-input-error class="mt-2" :messages="$errors->get('email')" />
+        <form method="POST"
+              action="{{ route('profile.update') }}"
+              enctype="multipart/form-data"
+              class="p-6 flex flex-col items-center gap-6">
 
-            @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! $user->hasVerifiedEmail())
-                <div>
-                    <p class="text-sm mt-2 text-gray-800">
-                        {{ __('Your email address is unverified.') }}
+            @csrf
+            @method('patch')
 
-                        <button form="send-verification" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                            {{ __('Click here to re-send the verification email.') }}
-                        </button>
-                    </p>
+            <!-- PROFILE IMAGE -->
+            <div class="flex flex-col items-center gap-3">
 
-                    @if (session('status') === 'verification-link-sent')
-                        <p class="mt-2 font-medium text-sm text-green-600">
-                            {{ __('A new verification link has been sent to your email address.') }}
-                        </p>
-                    @endif
+                <div class="avatar">
+                    <img
+                        src="{{ auth()->user()->profile_photo_url }}"
+                        alt="Profile">
                 </div>
-            @endif
-        </div>
 
-        <div class="flex items-center gap-4">
-            <x-primary-button>{{ __('Save') }}</x-primary-button>
+                <label class="text-sm text-indigo-600 cursor-pointer hover:underline">
+                    Change Photo
+                    <input
+                        type="file"
+                        name="profile_photo"
+                        accept="image/*"
+                        class="hidden">
+                </label>
+
+                @error('profile_photo')
+                    <p class="text-xs text-red-500">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <!-- NAME -->
+            <div class="w-full">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Name
+                </label>
+                <input
+                    type="text"
+                    name="name"
+                    value="{{ old('name', $user->name) }}"
+                    class="w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500">
+            </div>
+
+            <!-- EMAIL -->
+            <div class="w-full">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Email
+                </label>
+                <input
+                    type="email"
+                    value="{{ $user->email }}"
+                    disabled
+                    class="w-full rounded-md bg-gray-100 border-gray-300 text-gray-500 cursor-not-allowed">
+            </div>
+
+            <!-- SAVE BUTTON  -->
+            <button
+                type="submit"
+                class="w-full bg-white text-indigo-600 border border-indigo-600
+                       py-2.5 rounded-md text-sm font-semibold
+                       hover:bg-indigo-50 transition">
+                Save Changes
+            </button>
 
             @if (session('status') === 'profile-updated')
-                <p
-                    x-data="{ show: true }"
-                    x-show="show"
-                    x-transition
-                    x-init="setTimeout(() => show = false, 2000)"
-                    class="text-sm text-gray-600"
-                >{{ __('Saved.') }}</p>
+                <p class="text-sm text-green-600 text-center">
+                    Profile updated successfully
+                </p>
             @endif
-        </div>
-    </form>
+
+        </form>
+    </div>
 </section>
+
+<!-- AVATAR STYLE -->
+<style>
+    .avatar {
+        width: 90px;      
+        height: 90px;
+        border-radius: 9999px;
+        overflow: hidden;
+        border: 2px solid #e5e7eb;
+        background: #f9fafb;
+    }
+    .avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+</style>
