@@ -2,18 +2,19 @@
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+
 use App\Http\Controllers\OtpController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SocialAuthController;
+
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\CountryController;
 use App\Http\Controllers\Admin\StateController;
 use App\Http\Controllers\Admin\CityController;
 
+//PUBLIC
 
-// PUBLIC
-
-Route::get('/', fn() => view('auth.login'));
+Route::get('/', fn () => view('auth.login'));
 
 Route::get('/force-logout', function () {
     Auth::logout();
@@ -22,18 +23,20 @@ Route::get('/force-logout', function () {
     return redirect('/login');
 });
 
-
 //OTP
 
-Route::get('/verify-otp', [OtpController::class, 'show'])->name('otp.page');
-Route::post('/verify-otp', [OtpController::class, 'verify'])->name('otp.verify');
+Route::get('/verify-otp', [OtpController::class, 'show'])
+    ->name('otp.page');
+
+Route::post('/verify-otp', [OtpController::class, 'verify'])
+    ->name('otp.verify');
 
 
 //USER (ROLE: user)
 
 Route::middleware(['auth', 'role:user'])->group(function () {
 
-    Route::get('/dashboard', fn() => view('dashboard'))
+    Route::get('/dashboard', fn () => view('dashboard'))
         ->name('dashboard');
 
     Route::get('/profile', [ProfileController::class, 'edit'])
@@ -46,17 +49,16 @@ Route::middleware(['auth', 'role:user'])->group(function () {
         ->name('profile.destroy');
 });
 
-
 //MANAGER (ROLE: manager)
 
 Route::middleware(['auth', 'role:manager'])->group(function () {
 
-    Route::get('/manager/dashboard', fn() => view('manager.dashboard'))
+    Route::get('/manager/dashboard', fn () => view('manager.dashboard'))
         ->name('manager.dashboard');
 });
 
 
-// ADMIN,SUPER ADMIN,MANAGER (PERMISSION BASED)
+//ADMIN / SUPER ADMIN (PERMISSION BASED)
 
 Route::prefix('admin')
     ->name('admin.')
@@ -64,14 +66,14 @@ Route::prefix('admin')
     ->group(function () {
 
 
-        //Admin Dashboard -> Only admin / super-admin
+        //Dashboard
 
-        Route::get('/dashboard', fn() => view('admin.dashboard'))
+        Route::get('/dashboard', fn () => view('admin.dashboard'))
             ->middleware('role:admin|super-admin')
             ->name('dashboard');
 
 
-        //CRUD Routes -> Access controlled by permission middleware in controllers
+        //CRUD RESOURCES Permission handled inside controllers
 
         Route::resource('countries', CountryController::class);
         Route::resource('states', StateController::class);
@@ -79,29 +81,40 @@ Route::prefix('admin')
         Route::resource('users', UserController::class);
 
 
-        // SOFT DELETE – RESTORE ROUTES
+        //RESTORE (SOFT DELETE)
 
-        Route::post(
-            'countries/{id}/restore',
-            [CountryController::class, 'restore']
-        )->name('countries.restore');
+        Route::post('countries/{id}/restore', [CountryController::class, 'restore'])
+            ->name('countries.restore');
 
-        Route::post(
-            'states/{id}/restore',
-            [StateController::class, 'restore']
-        )->name('states.restore');
-        Route::post(
-            'cities/{id}/restore',
-            [CityController::class, 'restore']
-        )->name('cities.restore');
-        Route::post(
-            'users/{id}/restore',
-            [UserController::class, 'restore']
-        )->name('users.restore');
+        Route::post('states/{id}/restore', [StateController::class, 'restore'])
+            ->name('states.restore');
+
+        Route::post('cities/{id}/restore', [CityController::class, 'restore'])
+            ->name('cities.restore');
+
+        Route::post('users/{id}/restore', [UserController::class, 'restore'])
+            ->name('users.restore');
 
 
+        //USER STATUS TOGGLE (ACTIVE / INACTIVE)
+
+        Route::post(
+            'users/{user}/status',
+            [UserController::class, 'changeStatus']
+        )->name('users.status');
+
+
+        // CITY MODULE – COUNTRY and  STATE AJAX
+
+        Route::get(
+            'get-states/{country}',
+            function ($countryId) {
+                return \App\Models\State::where('country_id', $countryId)
+                    ->orderBy('name')
+                    ->get();
+            }
+        )->name('get.states');
     });
-
 
 //SOCIAL LOGIN
 
@@ -110,5 +123,6 @@ Route::get('/auth/google/callback', [SocialAuthController::class, 'handleGoogleC
 
 Route::get('/auth/github', [SocialAuthController::class, 'redirectToGithub']);
 Route::get('/auth/github/callback', [SocialAuthController::class, 'handleGithubCallback']);
+
 
 require __DIR__ . '/auth.php';

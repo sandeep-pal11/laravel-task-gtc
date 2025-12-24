@@ -11,21 +11,28 @@
         <select id="roleFilter" class="form-control">
             <option value="">All Roles</option>
             @foreach($roles as $role)
-                <option value="{{ $role->name }}">{{ ucfirst($role->name) }}</option>
+                <option value="{{ $role->name }}">
+                    {{ ucfirst($role->name) }}
+                </option>
             @endforeach
         </select>
     </div>
 
     <div class="col-md-3">
-        <input type="date" id="fromDate" class="form-control" max="{{ $today }}">
+        <input type="date" id="fromDate"
+               class="form-control"
+               max="{{ $today }}">
     </div>
 
     <div class="col-md-3">
-        <input type="date" id="toDate" class="form-control" max="{{ $today }}">
+        <input type="date" id="toDate"
+               class="form-control"
+               max="{{ $today }}">
     </div>
 
     <div class="col-md-3">
-        <button id="resetFilters" class="btn btn-secondary w-100">
+        <button id="resetFilters"
+                class="btn btn-secondary w-100">
             Clear Filters
         </button>
     </div>
@@ -38,6 +45,7 @@
             <th>Name</th>
             <th>Email</th>
             <th>Roles</th>
+            <th>Status</th>
             <th>Action</th>
         </tr>
     </thead>
@@ -64,26 +72,34 @@ $(function () {
             { data:'name' },
             { data:'email' },
             { data:'roles', orderable:false },
+            { data:'status', orderable:false, searchable:false },
             { data:'action', orderable:false, searchable:false }
         ]
     });
 
-    // reload on filter
-    $('#roleFilter, #fromDate, #toDate').change(()=>table.ajax.reload());
-
-    $('#resetFilters').click(()=>{
-        $('#roleFilter,#fromDate,#toDate').val('');
+    // FILTER CHANGE
+    $('#roleFilter, #fromDate, #toDate').change(function () {
         table.ajax.reload();
     });
 
-    // 🔴 DELETE
+    // RESET FILTER
+    $('#resetFilters').click(function () {
+        $('#roleFilter').val('');
+        $('#fromDate').val('');
+        $('#toDate').val('');
+        table.ajax.reload();
+    });
+
+    //  DELETE USER
     $(document).on('click','.delete-btn',function () {
+
         let form = $(this).closest('form');
 
         Swal.fire({
             title: 'Delete user?',
             icon: 'warning',
-            showCancelButton: true
+            showCancelButton: true,
+            confirmButtonText: 'Yes, delete'
         }).then(res=>{
             if(res.isConfirmed){
                 $.ajax({
@@ -92,7 +108,7 @@ $(function () {
                     data: form.serialize(),
                     success: function (res) {
                         Swal.fire('Success', res.message, 'success');
-                        table.ajax.reload();
+                        table.ajax.reload(null,false);
                     },
                     error: function (xhr) {
                         Swal.fire(
@@ -106,22 +122,52 @@ $(function () {
         });
     });
 
-    // ♻ RESTORE
+    // RESTORE USER
     $(document).on('click','.restore-btn',function () {
+
         let id = $(this).data('id');
 
         Swal.fire({
             title: 'Restore user?',
             icon: 'question',
-            showCancelButton: true
+            showCancelButton: true,
+            confirmButtonText: 'Yes, restore'
         }).then(res=>{
             if(res.isConfirmed){
-                $.post("{{ url('admin/users') }}/"+id+"/restore", {
-                    _token: "{{ csrf_token() }}"
-                }, function(res){
-                    Swal.fire('Restored', res.message, 'success');
-                    table.ajax.reload();
-                });
+                $.post(
+                    "{{ route('admin.users.restore','__id__') }}"
+                        .replace('__id__',id),
+                    { _token: "{{ csrf_token() }}" },
+                    function(res){
+                        Swal.fire('Restored', res.message, 'success');
+                        table.ajax.reload(null,false);
+                    }
+                );
+            }
+        });
+    });
+
+    // STATUS TOGGLE (ACTIVE / INACTIVE)
+    $(document).on('click','.status-btn',function () {
+
+        let id = $(this).data('id');
+
+        Swal.fire({
+            title: 'Change user status?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Yes'
+        }).then(res=>{
+            if(res.isConfirmed){
+                $.post(
+                    "{{ route('admin.users.status','__id__') }}"
+                        .replace('__id__',id),
+                    { _token: "{{ csrf_token() }}" },
+                    function(res){
+                        Swal.fire('Done', res.message, 'success');
+                        table.ajax.reload(null,false);
+                    }
+                );
             }
         });
     });

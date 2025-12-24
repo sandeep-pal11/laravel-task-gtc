@@ -32,12 +32,6 @@
             padding: 34px;
             border-radius: 16px;
             box-shadow: 0 30px 60px rgba(0,0,0,0.2);
-            animation: fadeIn 0.6s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
         }
 
         .login-box h2 {
@@ -70,13 +64,6 @@
             border-radius: 9px;
             border: 1px solid #ccc;
             font-size: 14px;
-            transition: 0.2s;
-        }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102,126,234,0.15);
         }
 
         .remember {
@@ -94,26 +81,8 @@
             border: none;
             border-radius: 9px;
             font-size: 15px;
-            font-weight: 500;
             cursor: pointer;
             margin-top: 20px;
-            transition: 0.2s;
-        }
-
-        .login-btn:hover {
-            background: #5a67d8;
-            transform: translateY(-1px);
-        }
-
-        .forgot {
-            text-align: right;
-            margin-top: 6px;
-        }
-
-        .forgot a {
-            font-size: 13px;
-            color: #667eea;
-            text-decoration: none;
         }
 
         .divider {
@@ -139,16 +108,13 @@
 
         .social-btn {
             width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             padding: 13px;
             border-radius: 9px;
             font-size: 14px;
-            font-weight: 500;
             text-decoration: none;
+            display: block;
+            text-align: center;
             margin-bottom: 12px;
-            transition: 0.2s;
         }
 
         .google {
@@ -157,23 +123,15 @@
             color: #444;
         }
 
-        .google:hover {
-            background: #f5f5f5;
-        }
-
         .github {
             background: #24292e;
             color: #fff;
         }
 
-        .github:hover {
-            background: #1b1f23;
-        }
-
         .error {
             color: #e53e3e;
-            font-size: 12px;
-            margin-top: 4px;
+            font-size: 13px;
+            margin-bottom: 12px;
             display: none;
         }
 
@@ -182,27 +140,28 @@
             margin-top: 18px;
             font-size: 14px;
         }
-
-        .register-box a {
-            color: #667eea;
-            font-weight: 500;
-            text-decoration: none;
-        }
     </style>
 </head>
 <body>
 
 <div class="login-box">
 
-    <h2>Welcome Back </h2>
+    <h2>Welcome Back</h2>
     <p>Login to continue to your dashboard</p>
+
+    {{-- ✅ SERVER SIDE ERROR (IMPORTANT FIX) --}}
+    @if ($errors->any())
+        <div class="error" style="display:block;">
+            {{ $errors->first() }}
+        </div>
+    @endif
 
     <form id="loginForm" method="POST" action="{{ route('login') }}">
         @csrf
 
         <div class="form-group">
             <label>Email Address</label>
-            <input type="email" name="email" id="email">
+            <input type="email" name="email" id="email" value="{{ old('email') }}">
             <div class="error" id="emailError"></div>
         </div>
 
@@ -217,17 +176,18 @@
             <span>Remember me</span>
         </div>
 
-        <div class="forgot">
-            <a href="{{ route('password.request') }}">Forgot password?</a>
-        </div>
-
         <button type="submit" class="login-btn">Login</button>
     </form>
 
     <div class="divider">OR</div>
 
-    <a href="{{ url('/auth/google') }}" class="social-btn google">Continue with Google</a>
-    <a href="{{ url('/auth/github') }}" class="social-btn github">Continue with GitHub</a>
+    <a href="{{ url('/auth/google') }}" class="social-btn google">
+        Continue with Google
+    </a>
+
+    <a href="{{ url('/auth/github') }}" class="social-btn github">
+        Continue with GitHub
+    </a>
 
     <div class="register-box">
         New here? <a href="{{ route('register') }}">Create an account</a>
@@ -236,35 +196,30 @@
 </div>
 
 <script>
-    $('#loginForm').on('submit', function (e) {
-        let valid = true;
+$('#loginForm').on('submit', function (e) {
 
-        $('.error').hide().text('');
+    let valid = true;
+    $('.error').hide().text('');
 
-        const email = $('#email').val().trim();
-        const password = $('#password').val().trim();
-        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    let email = $('#email').val().trim();
+    let password = $('#password').val().trim();
+    let emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-        if (email === '') {
-            $('#emailError').text('Email is required').show();
-            valid = false;
-        } else if (!emailPattern.test(email)) {
-            $('#emailError').text('Enter a valid email address').show();
-            valid = false;
-        }
+    if (email === '') {
+        $('#emailError').text('Email is required').show();
+        valid = false;
+    } else if (!emailPattern.test(email)) {
+        $('#emailError').text('Enter a valid email').show();
+        valid = false;
+    }
 
-        if (password === '') {
-            $('#passwordError').text('Password is required').show();
-            valid = false;
-        } else if (password.length < 6) {
-            $('#passwordError').text('Password must be at least 6 characters').show();
-            valid = false;
-        }
+    if (password === '') {
+        $('#passwordError').text('Password is required').show();
+        valid = false;
+    }
 
-        if (!valid) {
-            e.preventDefault();
-        }
-    });
+    if (!valid) e.preventDefault();
+});
 </script>
 
 </body>

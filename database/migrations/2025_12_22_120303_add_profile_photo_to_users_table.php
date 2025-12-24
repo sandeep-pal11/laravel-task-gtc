@@ -9,18 +9,33 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-   public function up(): void
-{
-    Schema::table('users', function (Blueprint $table) {
-        $table->string('profile_photo')->nullable()->after('email');
-    });
-}
+    public function up(): void
+    {
+        Schema::table('users', function (Blueprint $table) {
 
-public function down(): void
-{
-    Schema::table('users', function (Blueprint $table) {
-        $table->dropColumn('profile_photo');
-    });
-}
+            // Profile photo
+            $table->string('profile_photo')
+                  ->nullable()
+                  ->after('email');
 
+            // User status (active / inactive)
+            $table->enum('status', ['active', 'inactive'])
+                  ->default('active')
+                  ->after('password');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('users', function (Blueprint $table) {
+
+            $table->dropColumn([
+                'profile_photo',
+                'status'
+            ]);
+        });
+    }
 };

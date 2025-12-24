@@ -7,13 +7,18 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class State extends Model
 {
-   use SoftDeletes;
+    use SoftDeletes;
+
     protected $fillable = ['country_id','name'];
-      public function country() {
-        return $this->belongsTo(Country::class);
+
+    public function country()
+    {
+        
+        return $this->belongsTo(Country::class)->withTrashed();
     }
 
-    public function cities() {
+    public function cities()
+    {
         return $this->hasMany(City::class);
     }
 }

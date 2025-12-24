@@ -12,7 +12,9 @@ return new class extends Migration {
     {
         Schema::create('cities', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('state_id')->constrained()->cascadeOnDelete();
+             $table->foreignId('state_id')
+        ->constrained()
+        ->restrictOnDelete();
             $table->string('name')->unique();
             $table->softDeletes();
             $table->timestamps();

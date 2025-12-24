@@ -18,9 +18,9 @@ class CountryController extends Controller
         $this->middleware('permission:countries.delete')->only(['destroy','restore']);
     }
 
-    
+
      // List and Datatable
-     
+
     public function index(Request $request)
     {
         if ($request->ajax()) {
@@ -71,17 +71,17 @@ class CountryController extends Controller
         return view('country.index');
     }
 
-    
+
       //Create form
-     
+
     public function create()
     {
         return view('country.create');
     }
 
-    
+
      //Store
-     
+
     public function store(Request $request)
     {
         $request->validate(
@@ -104,17 +104,17 @@ class CountryController extends Controller
             ->with('success', 'Country created successfully');
     }
 
-   
+
      // Edit form
-     
+
     public function edit(Country $country)
     {
         return view('country.edit', compact('country'));
     }
 
-    
+
      //Update
-     
+
     public function update(Request $request, Country $country)
     {
         $request->validate(
@@ -137,9 +137,9 @@ class CountryController extends Controller
             ->with('success', 'Country updated successfully');
     }
 
-   
+
      // Soft delete
-     
+
     public function destroy(Country $country)
     {
         $country->delete();
@@ -151,7 +151,7 @@ class CountryController extends Controller
     }
 
      // Restore
-  
+
     public function restore($id)
     {
         Country::onlyTrashed()

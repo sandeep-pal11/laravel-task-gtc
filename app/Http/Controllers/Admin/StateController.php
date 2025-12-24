@@ -76,9 +76,9 @@ class StateController extends Controller
         return view('state.create', compact('countries'));
     }
 
-    
+
      // STORE
-     
+
     public function store(Request $request)
     {
         $request->validate(
@@ -114,9 +114,9 @@ class StateController extends Controller
         return view('state.edit', compact('state','countries'));
     }
 
-    
+
      // UPDATE
-    
+
     public function update(Request $request, State $state)
     {
         $request->validate(

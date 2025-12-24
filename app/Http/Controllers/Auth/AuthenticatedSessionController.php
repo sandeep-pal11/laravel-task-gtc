@@ -25,11 +25,20 @@ class AuthenticatedSessionController extends Controller
 
         $user = Auth::user();
 
-        /*
-        |--------------------------------------------------------------------------
-        | OTP CHECK
-        |--------------------------------------------------------------------------
-        */
+
+        //STATUS CHECK (ACTIVE / INACTIVE)
+
+        if ($user->status === 'inactive') {
+
+            Auth::logout();
+
+            return redirect('/login')->withErrors([
+                'email' => 'Your account is inactive. Please contact admin.',
+            ]);
+        }
+
+        //OTP CHECK
+
         if (!$user->is_otp_verified) {
 
             $otp = rand(100000, 999999);
@@ -50,11 +59,8 @@ class AuthenticatedSessionController extends Controller
             return redirect()->route('otp.page');
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | ✅ ROLE WISE REDIRECT (FINAL)
-        |--------------------------------------------------------------------------
-        */
+        //ROLE WISE REDIRECT
+
 
         // SUPER ADMIN
         if ($user->roles->contains('name', 'super-admin')) {
@@ -83,9 +89,8 @@ class AuthenticatedSessionController extends Controller
         ]);
     }
 
-    /**
-     * ✅ LOGOUT (FIXED)
-     */
+    //LOGOUT
+
     public function destroy(Request $request): RedirectResponse
     {
         Auth::logout();

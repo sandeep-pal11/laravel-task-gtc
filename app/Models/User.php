@@ -20,8 +20,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'profile_photo',   
+        'profile_photo',
         'is_otp_verified',
+        'status',
     ];
 
     protected $hidden = [
@@ -37,9 +38,9 @@ class User extends Authenticatable
         ];
     }
 
-    
+
      // Accessor for profile photo URL
-     
+
     public function getProfilePhotoUrlAttribute(): string
     {
         return $this->profile_photo
