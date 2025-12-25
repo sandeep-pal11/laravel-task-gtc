@@ -13,6 +13,49 @@ use App\Http\Controllers\Admin\StateController;
 use App\Http\Controllers\Admin\CityController;
 
 //PUBLIC
+Route::get('/admin/dashboardd', function () {
+    return view('adminn.dashboard');
+})->name('admin.dashboardd');
+
+Route::get('/admin/401', function () {
+    return view('adminn.401');
+})->name('admin.401');
+
+Route::get('/admin/404', function () {
+    return view('adminn.404');
+})->name('admin.404');
+
+Route::get('/admin/500', function () {
+    return view('adminn.500');
+})->name('admin.500');
+
+Route::get('/admin/charts', function () {
+    return view('adminn.charts');
+})->name('admin.charts');
+
+Route::get('/admin/layout-sidenav-light', function () {
+    return view('adminn.layout-sidenav-light');
+})->name('admin.layout-sidenav-light');
+
+Route::get('/admin/layout-static', function () {
+    return view('adminn.layout-static');
+})->name('admin.layout-static');
+
+Route::get('/admin/login', function () {
+    return view('adminn.login');
+})->name('admin.login');
+
+Route::get('/admin/password', function () {
+    return view('adminn.password');
+})->name('admin.password');
+
+Route::get('/admin/register', function () {
+    return view('adminn.register');
+})->name('admin.register');
+
+Route::get('/admin/tables', function () {
+    return view('adminn.tables');
+})->name('admin.tables');
 
 Route::get('/', fn () => view('auth.login'));
 
