@@ -1,4 +1,6 @@
-@extends('admin.layout')
+@extends('layouts.admin')
+
+@section('title','Edit Country')
 
 @section('content')
 @can('countries.edit')
@@ -18,10 +20,8 @@
                class="form-control @error('name') is-invalid @enderror"
                placeholder="Country name">
 
-        <!-- Client-side error -->
         <small class="text-danger error-name"></small>
 
-        <!-- Server-side error -->
         @error('name')
             <small class="text-danger">{{ $message }}</small>
         @enderror
@@ -36,7 +36,6 @@
 @push('scripts')
 <script>
 document.getElementById('countryEditForm').addEventListener('submit', function (e) {
-
     e.preventDefault();
 
     let name = this.name;

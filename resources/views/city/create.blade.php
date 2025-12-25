@@ -1,4 +1,6 @@
-@extends('admin.layout')
+@extends('layouts.admin')
+
+@section('title','Add City')
 
 @section('content')
 @can('cities.create')
@@ -8,11 +10,9 @@
 <form method="POST" action="{{ route('admin.cities.store') }}">
 @csrf
 
-{{-- COUNTRY --}}
+{{-- Country --}}
 <div class="mb-2">
-    <select id="country"
-            name="country_id"
-            class="form-control">
+    <select id="country" name="country_id" class="form-control">
         <option value="">Select Country</option>
         @foreach($countries as $country)
             <option value="{{ $country->id }}">{{ $country->name }}</option>
@@ -20,21 +20,16 @@
     </select>
 </div>
 
-{{-- STATE --}}
+{{-- State --}}
 <div class="mb-2">
-    <select id="state"
-            name="state_id"
-            class="form-control">
+    <select id="state" name="state_id" class="form-control">
         <option value="">Select State</option>
     </select>
 </div>
 
-{{-- CITY --}}
+{{-- City --}}
 <div class="mb-2">
-    <input type="text"
-           name="name"
-           class="form-control"
-           placeholder="City name">
+    <input type="text" name="name" class="form-control" placeholder="City name">
 </div>
 
 <button class="btn btn-success">Save</button>

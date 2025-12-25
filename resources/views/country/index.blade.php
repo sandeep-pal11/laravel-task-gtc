@@ -1,11 +1,12 @@
-@extends('admin.layout')
+@extends('layouts.admin')
+
+@section('title','Countries')
 
 @section('content')
 <h3>Countries</h3>
 
 @can('countries.create')
-<a href="{{ route('admin.countries.create') }}"
-   class="btn btn-primary mb-2">
+<a href="{{ route('admin.countries.create') }}" class="btn btn-primary mb-2">
     Add Country
 </a>
 @endcan
@@ -13,10 +14,9 @@
 <table class="table table-bordered" id="countries-table">
     <thead>
         <tr>
-            <th>Id</th>
+            <th>#</th>
             <th>Country</th>
 
-            {{-- Action header --}}
             @canany(['countries.edit','countries.delete'])
                 <th>Action</th>
             @endcanany
@@ -24,6 +24,7 @@
     </thead>
 </table>
 @endsection
+
 @push('scripts')
 <script>
 $(function () {
@@ -42,13 +43,14 @@ $(function () {
         columns: [
             { data:'DT_RowIndex', orderable:false, searchable:false },
             { data:'name' },
+
             @canany(['countries.edit','countries.delete'])
             { data:'action', orderable:false, searchable:false }
             @endcanany
         ]
     });
 
-    //  delete
+    // delete
     $(document).on('click','.delete-btn',function () {
         let form = $(this).closest('form');
 
@@ -65,7 +67,7 @@ $(function () {
         });
     });
 
-    //  restore
+    // restore
     $(document).on('click','.restore-btn',function () {
         let id = $(this).data('id');
 
@@ -87,4 +89,3 @@ $(function () {
 });
 </script>
 @endpush
-

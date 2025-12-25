@@ -1,11 +1,12 @@
-@extends('admin.layout')
+@extends('layouts.admin')
+
+@section('title','Cities')
 
 @section('content')
 <h3>Cities</h3>
 
 @can('cities.create')
-<a href="{{ route('admin.cities.create') }}"
-   class="btn btn-primary mb-2">
+<a href="{{ route('admin.cities.create') }}" class="btn btn-primary mb-2">
     Add City
 </a>
 @endcan
@@ -13,7 +14,7 @@
 <table class="table table-bordered" id="cities-table">
     <thead>
         <tr>
-            <th>#</th>
+            <th>Id</th>
             <th>City</th>
             <th>State</th>
             <th>Country</th>
@@ -52,7 +53,7 @@ $(function () {
         ]
     });
 
-    //  delete
+    // delete
     $(document).on('click','.delete-btn',function () {
         let form = $(this).closest('form');
 

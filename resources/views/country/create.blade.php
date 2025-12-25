@@ -1,13 +1,13 @@
-@extends('admin.layout')
+@extends('layouts.admin')
+
+@section('title','Add Country')
 
 @section('content')
 @can('countries.create')
 
 <h3 class="mb-3">Add Country</h3>
 
-<form id="countryForm"
-      method="POST"
-      action="{{ route('admin.countries.store') }}">
+<form id="countryForm" method="POST" action="{{ route('admin.countries.store') }}">
     @csrf
 
     <div class="mb-2">
@@ -17,10 +17,8 @@
                class="form-control @error('name') is-invalid @enderror"
                placeholder="Country name">
 
-        <!-- Client-side error -->
         <small class="text-danger error-name"></small>
 
-        <!-- Server-side error -->
         @error('name')
             <small class="text-danger">{{ $message }}</small>
         @enderror
@@ -35,7 +33,6 @@
 @push('scripts')
 <script>
 document.getElementById('countryForm').addEventListener('submit', function (e) {
-
     e.preventDefault();
 
     let name = this.name;

@@ -19,9 +19,8 @@ class UserController extends Controller
         $this->middleware('permission:users.delete')->only(['destroy','restore']);
     }
 
-    // =========================
     // INDEX
-    // =========================
+
     public function index(Request $request)
     {
         if (!$request->ajax()) {
@@ -51,7 +50,7 @@ class UserController extends Controller
 
             ->addColumn('action', function ($u) {
 
-                // ♻ restore
+                //  restore
                 if ($u->deleted_at) {
                     return '<button data-id="'.$u->id.'"
                         class="btn btn-success btn-sm restore-btn">
@@ -59,7 +58,7 @@ class UserController extends Controller
                         </button>';
                 }
 
-                // 🔒 self protection
+                // self protection
                 if (Auth::id() === $u->id) {
                     return '<span class="badge bg-secondary">You</span>';
                 }
@@ -67,7 +66,7 @@ class UserController extends Controller
                 $auth = Auth::user();
                 $btn  = '';
 
-                // 🔁 STATUS TOGGLE
+                // STATUS TOGGLE
                 if (
                     Gate::allows('users.edit') &&
                     !$u->roles->contains('name','super-admin') &&
@@ -83,7 +82,7 @@ class UserController extends Controller
                         </button>';
                 }
 
-                // ✏ EDIT (admin → super-admin ❌)
+                //  EDIT (admin and super-admin )
                 if (
                     Gate::allows('users.edit') &&
                     !(
@@ -97,7 +96,7 @@ class UserController extends Controller
                         </a>';
                 }
 
-                // 🗑 DELETE
+                // DELETE
                 if (Gate::allows('users.delete')) {
                     $btn .= '
                     <form action="'.route('admin.users.destroy',$u).'"
@@ -117,14 +116,13 @@ class UserController extends Controller
             ->make(true);
     }
 
-    // =========================
     // EDIT
-    // =========================
+
     public function edit(User $user)
     {
         $auth = Auth::user();
 
-        // ❌ admin → super admin edit blocked
+        //  admin and super admin edit blocked
         if (
             $auth->roles->contains('name','admin') &&
             $user->roles->contains('name','super-admin')

@@ -1,4 +1,6 @@
-@extends('admin.layout')
+@extends('layouts.admin')
+
+@section('title','Users')
 
 @section('content')
 <h3>Users</h3>
@@ -19,20 +21,15 @@
     </div>
 
     <div class="col-md-3">
-        <input type="date" id="fromDate"
-               class="form-control"
-               max="{{ $today }}">
+        <input type="date" id="fromDate" class="form-control" max="{{ $today }}">
     </div>
 
     <div class="col-md-3">
-        <input type="date" id="toDate"
-               class="form-control"
-               max="{{ $today }}">
+        <input type="date" id="toDate" class="form-control" max="{{ $today }}">
     </div>
 
     <div class="col-md-3">
-        <button id="resetFilters"
-                class="btn btn-secondary w-100">
+        <button id="resetFilters" class="btn btn-secondary w-100">
             Clear Filters
         </button>
     </div>
@@ -41,7 +38,7 @@
 <table class="table table-bordered" id="users-table">
     <thead>
         <tr>
-            <th>#</th>
+            <th>Id</th>
             <th>Name</th>
             <th>Email</th>
             <th>Roles</th>
@@ -82,24 +79,20 @@ $(function () {
         table.ajax.reload();
     });
 
-    // RESET FILTER
+    // RESET
     $('#resetFilters').click(function () {
-        $('#roleFilter').val('');
-        $('#fromDate').val('');
-        $('#toDate').val('');
+        $('#roleFilter,#fromDate,#toDate').val('');
         table.ajax.reload();
     });
 
-    //  DELETE USER
+    // DELETE
     $(document).on('click','.delete-btn',function () {
-
         let form = $(this).closest('form');
 
         Swal.fire({
             title: 'Delete user?',
             icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, delete'
+            showCancelButton: true
         }).then(res=>{
             if(res.isConfirmed){
                 $.ajax({
@@ -107,36 +100,29 @@ $(function () {
                     type: 'POST',
                     data: form.serialize(),
                     success: function (res) {
-                        Swal.fire('Success', res.message, 'success');
+                        Swal.fire('Deleted', res.message, 'success');
                         table.ajax.reload(null,false);
                     },
                     error: function (xhr) {
-                        Swal.fire(
-                            'Blocked',
-                            xhr.responseJSON.message,
-                            'error'
-                        );
+                        Swal.fire('Blocked', xhr.responseJSON.message, 'error');
                     }
                 });
             }
         });
     });
 
-    // RESTORE USER
+    // RESTORE
     $(document).on('click','.restore-btn',function () {
-
         let id = $(this).data('id');
 
         Swal.fire({
             title: 'Restore user?',
             icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, restore'
+            showCancelButton: true
         }).then(res=>{
             if(res.isConfirmed){
                 $.post(
-                    "{{ route('admin.users.restore','__id__') }}"
-                        .replace('__id__',id),
+                    "{{ route('admin.users.restore','__id__') }}".replace('__id__',id),
                     { _token: "{{ csrf_token() }}" },
                     function(res){
                         Swal.fire('Restored', res.message, 'success');
@@ -147,24 +133,21 @@ $(function () {
         });
     });
 
-    // STATUS TOGGLE (ACTIVE / INACTIVE)
+    // STATUS TOGGLE
     $(document).on('click','.status-btn',function () {
-
         let id = $(this).data('id');
 
         Swal.fire({
             title: 'Change user status?',
             icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: 'Yes'
+            showCancelButton: true
         }).then(res=>{
             if(res.isConfirmed){
                 $.post(
-                    "{{ route('admin.users.status','__id__') }}"
-                        .replace('__id__',id),
+                    "{{ route('admin.users.status','__id__') }}".replace('__id__',id),
                     { _token: "{{ csrf_token() }}" },
                     function(res){
-                        Swal.fire('Done', res.message, 'success');
+                        Swal.fire('Updated', res.message, 'success');
                         table.ajax.reload(null,false);
                     }
                 );

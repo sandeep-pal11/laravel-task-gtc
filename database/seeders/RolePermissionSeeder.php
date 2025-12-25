@@ -6,8 +6,6 @@ use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\PermissionRegistrar;
-use App\Models\User;
-use Illuminate\Support\Facades\Hash;
 
 class RolePermissionSeeder extends Seeder
 {
@@ -15,21 +13,27 @@ class RolePermissionSeeder extends Seeder
     {
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
-        //PERMISSIONS
      
+    // PERMISSIONS
+
         $permissions = [
+            'dashboard.view',
+
             'users.view',
             'users.create',
             'users.edit',
             'users.delete',
+
             'countries.view',
             'countries.create',
             'countries.edit',
             'countries.delete',
+
             'states.view',
             'states.create',
             'states.edit',
             'states.delete',
+
             'cities.view',
             'cities.create',
             'cities.edit',
@@ -43,8 +47,9 @@ class RolePermissionSeeder extends Seeder
             ]);
         }
 
+
         //ROLES
-   
+
         $superAdmin = Role::firstOrCreate([
             'name' => 'super-admin',
             'guard_name' => 'web',
@@ -59,43 +64,55 @@ class RolePermissionSeeder extends Seeder
             'name' => 'manager',
             'guard_name' => 'web',
         ]);
-        $userRole = Role::firstOrCreate([
+
+        $user = Role::firstOrCreate([
             'name' => 'user',
             'guard_name' => 'web',
         ]);
 
-        // ASSIGN PERMISSIONS
 
-        // Super Admin ALL
+        //ASSIGN PERMISSIONS
+
+
+        // Super Admin → ALL
         $superAdmin->syncPermissions(Permission::all());
 
-        // Admin: Full CRUD except user delete
+        // Admin
         $admin->syncPermissions([
+            'dashboard.view',
+
             'users.view',
             'users.create',
             'users.edit',
+
             'countries.view',
             'countries.create',
             'countries.edit',
             'countries.delete',
+
             'states.view',
             'states.create',
             'states.edit',
             'states.delete',
+
             'cities.view',
             'cities.create',
             'cities.edit',
             'cities.delete',
         ]);
 
-        // Manager  View and Create only
+        //  Manager
         $manager->syncPermissions([
+            'dashboard.view',
+
             'countries.view',
             'countries.create',
+
             'states.view',
             'states.create',
+
             'cities.view',
             'cities.create',
-        ]);  
+        ]);
     }
 }

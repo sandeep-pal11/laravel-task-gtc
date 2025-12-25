@@ -1,7 +1,10 @@
-@extends('admin.layout')
+@extends('layouts.admin')
+
+@section('title','Edit User Roles')
 
 @section('content')
 @can('users.edit')
+
 <h3>Edit User Role</h3>
 
 <form id="userRoleForm"
@@ -20,7 +23,7 @@
                        @checked($user->hasRole($role->name))>
 
                 <label class="form-check-label">
-                    {{ $role->name }}
+                    {{ ucfirst($role->name) }}
                 </label>
             </div>
         @endforeach
@@ -30,6 +33,7 @@
 
     <button class="btn btn-success mt-2">Update</button>
 </form>
+
 @endcan
 @endsection
 
@@ -39,8 +43,7 @@ document.getElementById('userRoleForm').addEventListener('submit', function (e) 
 
     e.preventDefault();
 
-    let checkboxes = document.querySelectorAll('.role-checkbox');
-    let checked = Array.from(checkboxes).some(cb => cb.checked);
+    let checked = document.querySelectorAll('.role-checkbox:checked').length;
 
     document.querySelector('.error-role').innerText = '';
 

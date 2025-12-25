@@ -1,69 +1,65 @@
 <div id="layoutSidenav_nav">
-                <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
-                    <div class="sb-sidenav-menu">
-                        <div class="nav">
-                            <div class="sb-sidenav-menu-heading">Core</div>
-                            <a class="nav-link" href="{{ route('admin.dashboardd') }}">
-                                <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
-                                Dashboard
-                            </a>
-                            <div class="sb-sidenav-menu-heading">Interface</div>
-                            <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts" aria-expanded="false" aria-controls="collapseLayouts">
-                                <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
-                                Layouts
-                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                            </a>
-                            <div class="collapse" id="collapseLayouts" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
-                                <nav class="sb-sidenav-menu-nested nav">
-                                    <a class="nav-link" href="{{ route('admin.layout-static') }}">Static Navigation</a>
-                                    <a class="nav-link" href="{{ route ('admin.layout-sidenav-light') }}">Light Sidenav</a>
-                                </nav>
-                            </div>
-                            <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePages" aria-expanded="false" aria-controls="collapsePages">
-                                <div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div>
-                                Pages
-                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                            </a>
-                            <div class="collapse" id="collapsePages" aria-labelledby="headingTwo" data-bs-parent="#sidenavAccordion">
-                                <nav class="sb-sidenav-menu-nested nav accordion" id="sidenavAccordionPages">
-                                    <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#pagesCollapseAuth" aria-expanded="false" aria-controls="pagesCollapseAuth">
-                                        Authentication
-                                        <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                                    </a>
-                                    <div class="collapse" id="pagesCollapseAuth" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordionPages">
-                                        <nav class="sb-sidenav-menu-nested nav">
-                                            <a class="nav-link" href="{{ route('admin.login') }}">Login</a>
-                                            <a class="nav-link" href="{{ route('admin.register') }}">Register</a>
-                                            <a class="nav-link" href="{{ route('admin.password') }}">Forgot Password</a>
-                                        </nav>
-                                    </div>
-                                    <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#pagesCollapseError" aria-expanded="false" aria-controls="pagesCollapseError">
-                                        Error
-                                        <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                                    </a>
-                                    <div class="collapse" id="pagesCollapseError" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordionPages">
-                                        <nav class="sb-sidenav-menu-nested nav">
-                                            <a class="nav-link" href="{{ route('admin.401') }}">401 Page</a>
-                                            <a class="nav-link" href="{{ route('admin.404') }}">404 Page</a>
-                                            <a class="nav-link" href="{{ route('admin.500') }}">500 Page</a>
-                                        </nav>
-                                    </div>
-                                </nav>
-                            </div>
-                            <div class="sb-sidenav-menu-heading">Addons</div>
-                            <a class="nav-link" href="{{ route('admin.charts') }}">
-                                <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
-                                Charts
-                            </a>
-                            <a class="nav-link" href="{{ route('admin.tables') }}">
-                                <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
-                                Tables
-                            </a>
-                        </div>
+    <nav class="sb-sidenav accordion sb-sidenav-dark">
+
+        <div class="sb-sidenav-menu">
+            <div class="nav">
+
+                <div class="sb-sidenav-menu-heading">CORE</div>
+
+                {{-- ADMIN / SUPER ADMIN --}}
+                @hasanyrole('admin|super-admin')
+                <a class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}"
+                   href="{{ route('admin.dashboard') }}">
+                    <div class="sb-nav-link-icon">
+                        <i class="fas fa-tachometer-alt"></i>
                     </div>
-                    <div class="sb-sidenav-footer">
-                        <div class="small">Logged in as:</div>
-                        Start Bootstrap
+                    Dashboard
+                </a>
+                @endhasanyrole
+
+                {{-- MANAGER --}}
+                @role('manager')
+                <a class="nav-link {{ request()->routeIs('manager.dashboard') ? 'active' : '' }}"
+                   href="{{ route('manager.dashboard') }}">
+                    <div class="sb-nav-link-icon">
+                        <i class="fas fa-tachometer-alt"></i>
                     </div>
-                </nav>
- </div>
+                    Dashboard
+                </a>
+                @endrole
+
+                <div class="sb-sidenav-menu-heading">INTERFACE</div>
+
+                {{-- USERS --}}
+                @can('users.view')
+                <a class="nav-link" href="{{ route('admin.users.index') }}">
+                    <i class="fas fa-users"></i> Users
+                </a>
+                @endcan
+
+                {{-- LOCATION --}}
+                @canany(['countries.view','states.view','cities.view'])
+                <a class="nav-link collapsed" data-bs-toggle="collapse" data-bs-target="#locationMenu">
+                    <i class="fas fa-map-marked-alt"></i> Location
+                </a>
+
+                <div class="collapse" id="locationMenu">
+                    <nav class="sb-sidenav-menu-nested nav">
+                        @can('countries.view')
+                        <a class="nav-link" href="{{ route('admin.countries.index') }}">Countries</a>
+                        @endcan
+                        @can('states.view')
+                        <a class="nav-link" href="{{ route('admin.states.index') }}">States</a>
+                        @endcan
+                        @can('cities.view')
+                        <a class="nav-link" href="{{ route('admin.cities.index') }}">Cities</a>
+                        @endcan
+                    </nav>
+                </div>
+                @endcanany
+
+            </div>
+        </div>
+
+    </nav>
+</div>

@@ -1,4 +1,6 @@
-@extends('admin.layout')
+@extends('layouts.admin')
+
+@section('title','Edit City')
 
 @section('content')
 @can('cities.edit')
@@ -9,11 +11,9 @@
 @csrf
 @method('PUT')
 
-{{-- COUNTRY --}}
+{{-- Country --}}
 <div class="mb-2">
-    <select id="country"
-            name="country_id"
-            class="form-control">
+    <select id="country" name="country_id" class="form-control">
         @foreach($countries as $country)
             <option value="{{ $country->id }}"
                 {{ $city->state->country_id == $country->id ? 'selected' : '' }}>
@@ -23,11 +23,9 @@
     </select>
 </div>
 
-{{-- STATE --}}
+{{-- State --}}
 <div class="mb-2">
-    <select id="state"
-            name="state_id"
-            class="form-control">
+    <select id="state" name="state_id" class="form-control">
         @foreach($states as $state)
             <option value="{{ $state->id }}"
                 {{ $city->state_id == $state->id ? 'selected' : '' }}>
@@ -37,12 +35,9 @@
     </select>
 </div>
 
-{{-- CITY --}}
+{{-- City --}}
 <div class="mb-2">
-    <input type="text"
-           name="name"
-           value="{{ $city->name }}"
-           class="form-control">
+    <input type="text" name="name" value="{{ $city->name }}" class="form-control">
 </div>
 
 <button class="btn btn-success">Update</button>

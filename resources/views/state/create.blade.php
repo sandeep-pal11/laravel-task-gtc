@@ -1,55 +1,33 @@
-@extends('admin.layout')
+@extends('layouts.admin')
+
+@section('title','Add State')
 
 @section('content')
 @can('states.create')
 
 <h3 class="mb-3">Add State</h3>
 
-<form id="stateForm"
-      method="POST"
-      action="{{ route('admin.states.store') }}">
-    @csrf
+<form id="stateForm" method="POST" action="{{ route('admin.states.store') }}">
+@csrf
 
-    <!-- Country -->
-    <div class="mb-2">
-        <select name="country_id"
-                class="form-control @error('country_id') is-invalid @enderror">
-            <option value="">Select Country</option>
-            @foreach($countries as $country)
-                <option value="{{ $country->id }}"
-                    {{ old('country_id') == $country->id ? 'selected' : '' }}>
-                    {{ $country->name }}
-                </option>
-            @endforeach
-        </select>
+{{-- Country --}}
+<div class="mb-2">
+    <select name="country_id" class="form-control">
+        <option value="">Select Country</option>
+        @foreach($countries as $country)
+            <option value="{{ $country->id }}">{{ $country->name }}</option>
+        @endforeach
+    </select>
+    <small class="text-danger error-country"></small>
+</div>
 
-        <!-- Client error -->
-        <small class="text-danger error-country"></small>
+{{-- State --}}
+<div class="mb-2">
+    <input type="text" name="name" class="form-control" placeholder="State name">
+    <small class="text-danger error-name"></small>
+</div>
 
-        <!-- Server error -->
-        @error('country_id')
-            <small class="text-danger">{{ $message }}</small>
-        @enderror
-    </div>
-
-    <!-- State name -->
-    <div class="mb-2">
-        <input type="text"
-               name="name"
-               value="{{ old('name') }}"
-               class="form-control @error('name') is-invalid @enderror"
-               placeholder="State name">
-
-        <!-- Client error -->
-        <small class="text-danger error-name"></small>
-
-        <!-- Server error -->
-        @error('name')
-            <small class="text-danger">{{ $message }}</small>
-        @enderror
-    </div>
-
-    <button class="btn btn-success">Save</button>
+<button class="btn btn-success">Save</button>
 </form>
 
 @endcan
@@ -58,18 +36,16 @@
 @push('scripts')
 <script>
 document.getElementById('stateForm').addEventListener('submit', function (e) {
-
     e.preventDefault();
 
     let country = this.country_id;
     let name    = this.name;
+    let hasError = false;
 
     country.classList.remove('is-invalid');
     name.classList.remove('is-invalid');
     document.querySelector('.error-country').innerText = '';
     document.querySelector('.error-name').innerText = '';
-
-    let hasError = false;
 
     if (country.value === '') {
         country.classList.add('is-invalid');
