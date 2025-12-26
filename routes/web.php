@@ -119,6 +119,10 @@ Route::prefix('admin')
                 ->get();
         })->name('get.states');
     });
+    Route::get(
+    'countries/{country}',
+    [CountryController::class, 'show']
+)->name('countries.show');
 
 
 // SOCIAL LOGIN

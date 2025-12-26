@@ -12,15 +12,15 @@ class CountryController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('permission:countries.view')->only('index');
+        $this->middleware('permission:countries.view')->only(['index','show']);
         $this->middleware('permission:countries.create')->only(['create','store']);
         $this->middleware('permission:countries.edit')->only(['edit','update']);
         $this->middleware('permission:countries.delete')->only(['destroy','restore']);
     }
 
-
-     // List and Datatable
-
+    // ======================
+    // INDEX + DATATABLE
+    // ======================
     public function index(Request $request)
     {
         if ($request->ajax()) {
@@ -31,19 +31,27 @@ class CountryController extends Controller
                 ->addIndexColumn()
                 ->addColumn('action', function ($c) {
 
-                    // Deleted and Restore
                     if ($c->deleted_at) {
                         return '
-                            <button data-id="'.$c->id.'"
-                                    class="btn btn-success btn-sm restore-btn">
-                                Restore
-                            </button>';
+                        <button data-id="'.$c->id.'"
+                                class="btn btn-success btn-sm restore-btn">
+                            Restore
+                        </button>';
                     }
 
                     $btn = '';
 
+                    // 👁 VIEW (NEW)
+                    if (Gate::allows('countries.view')) {
+                        $btn .= '
+                        <button data-id="'.$c->id.'"
+                                class="btn btn-info btn-sm me-1 view-btn">
+                            View
+                        </button>';
+                    }
+
                     if (Gate::allows('countries.edit')) {
-                        $btn .= '<a href="'.route('admin.countries.edit', $c).'"
+                        $btn .= '<a href="'.route('admin.countries.edit',$c).'"
                                    class="btn btn-warning btn-sm me-1">
                                    Edit
                                  </a>';
@@ -51,7 +59,7 @@ class CountryController extends Controller
 
                     if (Gate::allows('countries.delete')) {
                         $btn .= '
-                        <form action="'.route('admin.countries.destroy', $c).'"
+                        <form action="'.route('admin.countries.destroy',$c).'"
                               method="POST"
                               class="d-inline delete-form">
                             '.csrf_field().method_field('DELETE').'
@@ -71,96 +79,78 @@ class CountryController extends Controller
         return view('country.index');
     }
 
+    // ======================
+    // 👁 SHOW (COUNTRY → STATES → CITIES)
+    // ======================
+    public function show(Country $country)
+    {
+        $country->load('states.cities');
 
-      //Create form
+        return response()->json([
+            'status' => true,
+            'data'   => $country
+        ]);
+    }
 
+    // CREATE
     public function create()
     {
         return view('country.create');
     }
 
-
-     //Store
-
+    // STORE
     public function store(Request $request)
     {
-        $request->validate(
-            [
-                'name' => 'required|min:2|unique:countries,name',
-            ],
-            [
-                'name.required' => 'Country name is required',
-                'name.min'      => 'Country name must be at least 2 characters',
-                'name.unique'   => 'Country name already exists',
-            ]
-        );
-
-        Country::create([
-            'name' => $request->name,
+        $request->validate([
+            'name' => 'required|min:2|unique:countries,name'
         ]);
+
+        Country::create(['name' => $request->name]);
 
         return redirect()
             ->route('admin.countries.index')
-            ->with('success', 'Country created successfully');
+            ->with('success','Country created successfully');
     }
 
-
-     // Edit form
-
+    // EDIT
     public function edit(Country $country)
     {
         return view('country.edit', compact('country'));
     }
 
-
-     //Update
-
+    // UPDATE
     public function update(Request $request, Country $country)
     {
-        $request->validate(
-            [
-                'name' => 'required|min:2|unique:countries,name,' . $country->id,
-            ],
-            [
-                'name.required' => 'Country name is required',
-                'name.min'      => 'Country name must be at least 2 characters',
-                'name.unique'   => 'Country name already exists',
-            ]
-        );
-
-        $country->update([
-            'name' => $request->name,
+        $request->validate([
+            'name' => 'required|min:2|unique:countries,name,' . $country->id
         ]);
+
+        $country->update(['name' => $request->name]);
 
         return redirect()
             ->route('admin.countries.index')
-            ->with('success', 'Country updated successfully');
+            ->with('success','Country updated successfully');
     }
 
-
-     // Soft delete
-
+    // DELETE
     public function destroy(Country $country)
     {
         $country->delete();
 
         return response()->json([
             'status' => true,
-            'message' => 'Country deleted',
+            'message' => 'Country deleted'
         ]);
     }
 
-     // Restore
-
+    // RESTORE
     public function restore($id)
     {
-        Country::onlyTrashed()
-            ->findOrFail($id)
-            ->restore();
+        Country::onlyTrashed()->findOrFail($id)->restore();
 
         return response()->json([
             'status' => true,
-            'message' => 'Country restored',
+            'message' => 'Country restored'
         ]);
     }
 }

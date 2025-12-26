@@ -14,7 +14,7 @@ class StateController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('permission:states.view')->only('index');
+        $this->middleware('permission:states.view')->only(['index','show']);
         $this->middleware('permission:states.create')->only(['create','store']);
         $this->middleware('permission:states.edit')->only(['edit','update']);
         $this->middleware('permission:states.delete')->only(['destroy','restore']);
@@ -33,13 +33,22 @@ class StateController extends Controller
 
                     if ($s->deleted_at) {
                         return '
-                            <button data-id="'.$s->id.'"
-                                    class="btn btn-success btn-sm restore-btn">
-                                Restore
-                            </button>';
+                        <button data-id="'.$s->id.'"
+                                class="btn btn-success btn-sm restore-btn">
+                            Restore
+                        </button>';
                     }
 
                     $btn = '';
+
+                    // 👁 VIEW
+                    if (Gate::allows('states.view')) {
+                        $btn .= '
+                        <button data-id="'.$s->id.'"
+                                class="btn btn-info btn-sm me-1 view-btn">
+                            View
+                        </button>';
+                    }
 
                     if (Gate::allows('states.edit')) {
                         $btn .= '<a href="'.route('admin.states.edit',$s).'"
@@ -70,36 +79,38 @@ class StateController extends Controller
         return view('state.index');
     }
 
+    // 👁 SHOW STATE → CITIES
+    public function show(State $state)
+    {
+        $state->load(['country','cities']);
+
+        return response()->json([
+            'status' => true,
+            'data' => $state
+        ]);
+    }
+
+    // CREATE
     public function create()
     {
         $countries = Country::all();
         return view('state.create', compact('countries'));
     }
 
-
-     // STORE
-
+    // STORE
     public function store(Request $request)
     {
-        $request->validate(
-            [
-                'country_id' => 'required',
-                'name' => [
-                    'required',
-                    'min:2',
-                    Rule::unique('states')
-                        ->where(fn ($q) =>
-                            $q->where('country_id', $request->country_id)
-                        ),
-                ],
+        $request->validate([
+            'country_id' => 'required',
+            'name' => [
+                'required',
+                'min:2',
+                Rule::unique('states')
+                    ->where(fn ($q) =>
+                        $q->where('country_id', $request->country_id)
+                    ),
             ],
-            [
-                'country_id.required' => 'Country is required',
-                'name.required'       => 'State name is required',
-                'name.min'            => 'Minimum 2 characters required',
-                'name.unique'         => 'This state already exists in selected country',
-            ]
-        );
+        ]);
 
         State::create($request->only('country_id','name'));
 
@@ -108,37 +119,28 @@ class StateController extends Controller
             ->with('success','State created successfully');
     }
 
+    // EDIT
     public function edit(State $state)
     {
         $countries = Country::all();
         return view('state.edit', compact('state','countries'));
     }
 
-
-     // UPDATE
-
+    // UPDATE
     public function update(Request $request, State $state)
     {
-        $request->validate(
-            [
-                'country_id' => 'required',
-                'name' => [
-                    'required',
-                    'min:2',
-                    Rule::unique('states')
-                        ->where(fn ($q) =>
-                            $q->where('country_id', $request->country_id)
-                        )
-                        ->ignore($state->id),
-                ],
+        $request->validate([
+            'country_id' => 'required',
+            'name' => [
+                'required',
+                'min:2',
+                Rule::unique('states')
+                    ->where(fn ($q) =>
+                        $q->where('country_id', $request->country_id)
+                    )
+                    ->ignore($state->id),
             ],
-            [
-                'country_id.required' => 'Country is required',
-                'name.required'       => 'State name is required',
-                'name.min'            => 'Minimum 2 characters required',
-                'name.unique'         => 'This state already exists in selected country',
-            ]
-        );
+        ]);
 
         $state->update($request->only('country_id','name'));
 
