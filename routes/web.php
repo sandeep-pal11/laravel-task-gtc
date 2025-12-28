@@ -43,11 +43,10 @@ Route::post('/verify-otp', [OtpController::class, 'verify'])
     ->name('otp.verify');
 
 
-//USER PANEL (ROLE: user)
-
+// USER PANEL (ROLE: user)
 Route::middleware(['auth', 'role:user'])->group(function () {
 
-    Route::get('/dashboard', fn () => view('dashboard'))
+    Route::get('/dashboard', fn () => view('user.dashboard'))
         ->name('dashboard');
 
     Route::get('/profile', [ProfileController::class, 'edit'])
@@ -59,6 +58,7 @@ Route::middleware(['auth', 'role:user'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])
         ->name('profile.destroy');
 });
+
 
 
 //MANAGER PANEL (ROLE: manager)
@@ -119,10 +119,6 @@ Route::prefix('admin')
                 ->get();
         })->name('get.states');
     });
-    Route::get(
-    'countries/{country}',
-    [CountryController::class, 'show']
-)->name('countries.show');
 
 
 // SOCIAL LOGIN

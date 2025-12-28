@@ -11,7 +11,7 @@ use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
-    
+
      //Show profile edit page
 
     public function edit(Request $request): View
@@ -56,9 +56,9 @@ class ProfileController extends Controller
             ->with('status', 'profile-updated');
     }
 
-    
+
      //Delete account
-     
+
     public function destroy(Request $request): RedirectResponse
     {
         $request->validateWithBag('userDeletion', [

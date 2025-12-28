@@ -1,29 +1,50 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Profile') }}
-        </h2>
-    </x-slot>
+@extends('user.layouts.app')
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    @include('profile.partials.update-profile-information-form')
-                </div>
-            </div>
+@section('title', 'Profile')
 
-            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    @include('profile.partials.update-password-form')
-                </div>
-            </div>
+@section('content')
 
-            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    @include('profile.partials.delete-user-form')
-                </div>
-            </div>
-        </div>
+@php
+    $user = auth()->user();
+    $isSocialUser = $user->provider !== null;
+@endphp
+
+<h1 class="mt-4">Profile</h1>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <i class="fas fa-user me-1"></i> Profile Information
     </div>
-</x-app-layout>
+    <div class="card-body">
+        @include('profile.partials.update-profile-information-form')
+    </div>
+</div>
+
+@if(!$isSocialUser)
+<div class="card mb-4">
+    <div class="card-header">
+        <i class="fas fa-lock me-1"></i> Change Password
+    </div>
+    <div class="card-body">
+        @include('profile.partials.update-password-form')
+    </div>
+</div>
+@endif
+
+@if($isSocialUser)
+<div class="alert alert-info">
+    You logged in using <b>{{ ucfirst($user->provider) }}</b>.
+    Password change is disabled.
+</div>
+@endif
+
+<div class="card border-danger">
+    <div class="card-header bg-danger text-white">
+        <i class="fas fa-trash me-1"></i> Delete Account
+    </div>
+    <div class="card-body">
+        @include('profile.partials.delete-user-form')
+    </div>
+</div>
+
+@endsection

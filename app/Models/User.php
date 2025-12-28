@@ -21,6 +21,8 @@ class User extends Authenticatable
         'email',
         'password',
         'profile_photo',
+        'provider',          
+        'provider_id',
         'is_otp_verified',
         'status',
     ];
