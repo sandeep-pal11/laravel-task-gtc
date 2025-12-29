@@ -30,3 +30,14 @@
 
     <button class="btn btn-primary">Save Changes</button>
 </form>
+
+@if(session('success'))
+<script>
+Swal.fire({
+    icon: 'success',
+    title: 'Profile Updated',
+    text: "{{ session('success') }}",
+    confirmButtonColor: '#0d6efd'
+});
+</script>
+@endif
