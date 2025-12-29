@@ -16,6 +16,12 @@
                     Profile
                 </a>
 
+                {{-- USER TASKS --}}
+                <a class="nav-link" href="{{ route('user.tasks.index') }}">
+                    <i class="fas fa-tasks"></i>
+                    My Tasks
+                </a>
+
             </div>
         </div>
 

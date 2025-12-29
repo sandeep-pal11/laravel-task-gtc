@@ -4,10 +4,17 @@
     <meta charset="utf-8" />
     <title>@yield('title', 'User Dashboard')</title>
 
+    {{-- SB Admin CSS --}}
     <link href="{{ asset('css/styles.css') }}" rel="stylesheet">
+
+    {{-- FontAwesome --}}
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js"></script>
 
-    <!-- SweetAlert2 -->
+    {{-- ✅ DataTables CSS (REQUIRED) --}}
+    <link rel="stylesheet"
+          href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
+
+    {{-- SweetAlert2 --}}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
@@ -27,11 +34,21 @@
     </div>
 </div>
 
+{{-- Bootstrap --}}
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+
+{{-- SB Admin JS --}}
 <script src="{{ asset('js/scripts.js') }}"></script>
 
+{{-- ✅ jQuery (DataTables ke liye MUST) --}}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+{{-- ✅ DataTables JS --}}
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+
 {{-- ========================================================= --}}
-{{-- CLIENT SIDE VALIDATION --}}
+{{-- CLIENT SIDE VALIDATION (TERA CODE AS IT IS) --}}
 {{-- ========================================================= --}}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -126,52 +143,23 @@ function confirmDeleteAccount() {
 </script>
 
 {{-- ========================================================= --}}
-{{-- SERVER SIDE RESPONSE HANDLING --}}
+{{-- SERVER SIDE ALERTS --}}
 {{-- ========================================================= --}}
 
-@if(session('status') === 'profile-updated')
+@if(session('success'))
 <script>
 Swal.fire({
     icon: 'success',
-    title: 'Profile Updated',
-    text: 'Your profile has been updated successfully',
+    title: 'Success',
+    text: @json(session('success')),
     timer: 2000,
     showConfirmButton: false
 });
 </script>
 @endif
 
-@if(session('status') === 'password-updated')
-<script>
-Swal.fire({
-    icon: 'success',
-    title: 'Password Updated',
-    text: 'Your password has been changed successfully',
-    timer: 2000,
-    showConfirmButton: false
-});
-</script>
-@endif
-
-@if($errors->updatePassword->any())
-<script>
-Swal.fire({
-    icon: 'error',
-    title: 'Password Update Failed',
-    html: @json(implode('<br>', $errors->updatePassword->all()))
-});
-</script>
-@endif
-
-@if($errors->userDeletion->any())
-<script>
-Swal.fire({
-    icon: 'error',
-    title: 'Delete Account Failed',
-    html: @json(implode('<br>', $errors->userDeletion->all()))
-});
-</script>
-@endif
+{{-- ✅ IMPORTANT: YAJRA SCRIPT STACK --}}
+@stack('scripts')
 
 </body>
 </html>

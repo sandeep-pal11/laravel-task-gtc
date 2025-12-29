@@ -11,33 +11,47 @@ class RolePermissionSeeder extends Seeder
 {
     public function run(): void
     {
+        // Clear cached permissions
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
-     
-    // PERMISSIONS
-
+        /*
+        |--------------------------------------------------------------------------
+        | PERMISSIONS
+        |--------------------------------------------------------------------------
+        */
         $permissions = [
             'dashboard.view',
 
+            // USERS
             'users.view',
             'users.create',
             'users.edit',
             'users.delete',
 
+            // COUNTRIES
             'countries.view',
             'countries.create',
             'countries.edit',
             'countries.delete',
 
+            // STATES
             'states.view',
             'states.create',
             'states.edit',
             'states.delete',
 
+            // CITIES
             'cities.view',
             'cities.create',
             'cities.edit',
             'cities.delete',
+
+            // ✅ TASKS (NEW)
+            'tasks.view',
+            'tasks.create',
+            'tasks.edit',
+            'tasks.delete',
+            'tasks.work_update',
         ];
 
         foreach ($permissions as $permission) {
@@ -47,9 +61,11 @@ class RolePermissionSeeder extends Seeder
             ]);
         }
 
-
-        //ROLES
-
+        /*
+        |--------------------------------------------------------------------------
+        | ROLES
+        |--------------------------------------------------------------------------
+        */
         $superAdmin = Role::firstOrCreate([
             'name' => 'super-admin',
             'guard_name' => 'web',
@@ -70,14 +86,16 @@ class RolePermissionSeeder extends Seeder
             'guard_name' => 'web',
         ]);
 
+        /*
+        |--------------------------------------------------------------------------
+        | ASSIGN PERMISSIONS
+        |--------------------------------------------------------------------------
+        */
 
-        //ASSIGN PERMISSIONS
-
-
-        // Super Admin → ALL
+        // 🔥 Super Admin → ALL permissions
         $superAdmin->syncPermissions(Permission::all());
 
-        // Admin
+        // ✅ Admin permissions
         $admin->syncPermissions([
             'dashboard.view',
 
@@ -99,9 +117,15 @@ class RolePermissionSeeder extends Seeder
             'cities.create',
             'cities.edit',
             'cities.delete',
+
+            // TASKS (ADMIN)
+            'tasks.view',
+            'tasks.create',
+            'tasks.edit',
+            'tasks.delete',
         ]);
 
-        //  Manager
+        // ✅ Manager permissions
         $manager->syncPermissions([
             'dashboard.view',
 
@@ -113,6 +137,12 @@ class RolePermissionSeeder extends Seeder
 
             'cities.view',
             'cities.create',
+        ]);
+
+        // ✅ User permissions
+        $user->syncPermissions([
+            'tasks.view',
+            'tasks.work_update',
         ]);
     }
 }
