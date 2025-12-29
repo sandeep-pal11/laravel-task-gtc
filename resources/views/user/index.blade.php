@@ -19,20 +19,6 @@
             @endforeach
         </select>
     </div>
-
-    <div class="col-md-3">
-        <input type="date" id="fromDate" class="form-control" max="{{ $today }}">
-    </div>
-
-    <div class="col-md-3">
-        <input type="date" id="toDate" class="form-control" max="{{ $today }}">
-    </div>
-
-    <div class="col-md-3">
-        <button id="resetFilters" class="btn btn-secondary w-100">
-            Clear Filters
-        </button>
-    </div>
 </div>
 
 <table class="table table-bordered" id="users-table">

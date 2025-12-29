@@ -137,6 +137,11 @@ class RolePermissionSeeder extends Seeder
 
             'cities.view',
             'cities.create',
+            // 🔥 TASKS 
+            'tasks.view',
+            'tasks.create',
+            'tasks.edit',
+            'tasks.delete',
         ]);
 
         // ✅ User permissions
