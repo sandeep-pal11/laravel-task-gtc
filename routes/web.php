@@ -57,8 +57,12 @@ Route::middleware(['auth','role:user'])->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])
         ->name('profile.update');
 
-    Route::delete('/profile', [ProfileController::class, 'destroy'])
+        Route::delete('/profile', [ProfileController::class, 'destroy'])
         ->name('profile.destroy');
+
+    // ✅ DELETE PROFILE PHOTO (SEPARATE ROUTE)
+    Route::delete('/profile/photo', [ProfileController::class, 'deleteProfilePhoto'])
+        ->name('profile.photo.delete');
 
     // MY TASKS
     Route::get('/my-tasks', [MyTaskController::class, 'index'])

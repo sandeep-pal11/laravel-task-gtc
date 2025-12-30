@@ -31,11 +31,23 @@
     <button class="btn btn-primary">Save Changes</button>
 </form>
 
+{{-- DELETE PHOTO (SEPARATE FORM) --}}
+@if($user->profile_photo)
+<form method="POST" action="{{ route('profile.photo.delete') }}" class="mt-2">
+    @csrf
+    @method('DELETE')
+
+    <button class="btn btn-danger btn-sm">
+        Delete Photo
+    </button>
+</form>
+@endif
+
 @if(session('success'))
 <script>
 Swal.fire({
     icon: 'success',
-    title: 'Profile Updated',
+    title: 'Success',
     text: "{{ session('success') }}",
     confirmButtonColor: '#0d6efd'
 });

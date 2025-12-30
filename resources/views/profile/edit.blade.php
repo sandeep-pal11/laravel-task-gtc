@@ -40,7 +40,7 @@
 
 <div class="card border-danger">
     <div class="card-header bg-danger text-white">
-        <i class="fas fa-trash me-1"></i> Delete Account
+    </i> Delete Account
     </div>
     <div class="card-body">
         @include('profile.partials.delete-user-form')

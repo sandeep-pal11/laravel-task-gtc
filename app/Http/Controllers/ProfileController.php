@@ -11,18 +11,12 @@ use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
-
-     //Show profile edit page
-
     public function edit(Request $request): View
     {
         return view('profile.edit', [
             'user' => $request->user(),
         ]);
     }
-
-
-     //Update profile (ONLY name and profile photo)
 
     public function update(Request $request): RedirectResponse
     {
@@ -33,10 +27,8 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
-        // ROFILE PHOTO UPDATE
         if ($request->hasFile('profile_photo')) {
 
-            // old photo delete
             if ($user->profile_photo) {
                 Storage::disk('public')->delete($user->profile_photo);
             }
@@ -47,18 +39,26 @@ class ProfileController extends Controller
             $user->profile_photo = $path;
         }
 
-        // NAME UPDATE
         $user->name = $request->name;
-
         $user->save();
 
-      return Redirect::route('profile.edit')
-    ->with('success', 'Profile updated successfully.');
-
+        return Redirect::route('profile.edit')
+            ->with('success', 'Profile updated successfully.');
     }
 
+    //  DELETE PROFILE PHOTO
+    public function deleteProfilePhoto(Request $request)
+    {
+        $user = $request->user();
 
-     //Delete account
+        if ($user->profile_photo) {
+            Storage::disk('public')->delete($user->profile_photo);
+            $user->profile_photo = null;
+            $user->save();
+        }
+
+        return back()->with('success', 'Profile photo deleted');
+    }
 
     public function destroy(Request $request): RedirectResponse
     {
@@ -70,7 +70,6 @@ class ProfileController extends Controller
 
         Auth::logout();
 
-        // profile photo delete
         if ($user->profile_photo) {
             Storage::disk('public')->delete($user->profile_photo);
         }
