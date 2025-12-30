@@ -8,23 +8,30 @@
 <form id="taskForm" method="POST" action="{{ route('admin.tasks.store') }}">
 @csrf
 
+{{-- USER SELECT --}}
 <div class="mb-3">
     <label>User</label>
-    <select name="user_id" class="form-control">
-        <option value="">Select User</option>
+    <select name="user_id" class="form-control user-select">
+        <option value="" disabled selected>
+            -- Select User --
+        </option>
         @foreach($users as $user)
-            <option value="{{ $user->id }}">{{ $user->name }}</option>
+            <option value="{{ $user->id }}">
+                {{ $user->name }}
+            </option>
         @endforeach
     </select>
     <small class="text-danger error-user_id"></small>
 </div>
 
+{{-- TITLE --}}
 <div class="mb-3">
     <label>Title</label>
     <input type="text" name="title" class="form-control">
     <small class="text-danger error-title"></small>
 </div>
 
+{{-- DETAILS --}}
 <div class="mb-3">
     <label>Task Details</label>
     <textarea name="task_details" class="form-control" rows="4"></textarea>
@@ -51,9 +58,31 @@
 
 </form>
 @endsection
+
 @push('scripts')
+
+{{-- 🔥 CSS (ONLY FOR SELECT LOOK) --}}
+<style>
+.user-select {
+    color: #6c757d; /* muted placeholder */
+}
+
+.user-select option:not([disabled]) {
+    color: #212529;
+}
+
+.user-select:focus {
+    color: #212529;
+}
+</style>
+
 <script>
 $(function () {
+
+    // 🔥 Select change → normal text
+    $('select[name="user_id"]').on('change', function () {
+        $(this).css('color', '#212529');
+    });
 
     $('#taskForm').on('submit', function (e) {
         e.preventDefault();
@@ -71,7 +100,7 @@ $(function () {
         let due_date    = $('input[name="due_date"]');
 
         // USER
-        if (user_id.val() === '') {
+        if (user_id.val() === null) {
             valid = false;
             user_id.addClass('is-invalid');
             $('.error-user_id').text('Please select a user.');
@@ -116,7 +145,7 @@ $(function () {
         }
 
         if (valid) {
-            this.submit(); 
+            this.submit();
         }
     });
 
