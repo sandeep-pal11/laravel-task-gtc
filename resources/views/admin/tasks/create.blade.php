@@ -116,7 +116,7 @@ $(function () {
         }
 
         if (valid) {
-            this.submit(); // ✅ submit form
+            this.submit(); 
         }
     });
 

@@ -71,11 +71,7 @@ class SocialAuthController extends Controller
         return redirect('/dashboard');
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | GITHUB LOGIN
-    |--------------------------------------------------------------------------
-    */
+    // GITHUB LOGIN
 
     public function redirectToGithub()
     {
@@ -83,7 +79,7 @@ class SocialAuthController extends Controller
         $provider = Socialite::driver('github');
 
         return $provider->with([
-            'login' => '', // ✅ HAR BAAR LOGIN SCREEN
+            'login' => '',
         ])->redirect();
     }
 
@@ -98,7 +94,7 @@ class SocialAuthController extends Controller
 
         if ($user) {
 
-            // 🔥 IMPORTANT FIX: provider FORCEFULLY SAVE
+            //  IMPORTANT FIX: provider FORCEFULLY SAVE
             if ($user->provider === null) {
                 $user->update([
                     'provider' => 'github',

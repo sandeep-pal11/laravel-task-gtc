@@ -53,7 +53,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
-    /* ================= PROFILE UPDATE ================= */
+    /* PROFILE UPDATE */
     const profileForm = document.getElementById('profileUpdateForm');
     if (profileForm) {
         profileForm.addEventListener('submit', function (e) {
@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    /* ================= PASSWORD UPDATE ================= */
+    /*PASSWORD UPDATE */
     const passwordForm = document.getElementById('passwordUpdateForm');
     if (passwordForm) {
         passwordForm.addEventListener('submit', function (e) {
@@ -116,7 +116,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
-/* ================= DELETE ACCOUNT ================= */
+/*  DELETE ACCOUNT */
 function confirmDeleteAccount() {
 
     const password = document.getElementById('deletePassword');
@@ -142,9 +142,6 @@ function confirmDeleteAccount() {
 }
 </script>
 
-{{-- ========================================================= --}}
-{{-- SERVER SIDE ALERTS --}}
-{{-- ========================================================= --}}
 
 @if(session('success'))
 <script>
@@ -158,7 +155,7 @@ Swal.fire({
 </script>
 @endif
 
-{{-- ✅ IMPORTANT: YAJRA SCRIPT STACK --}}
+{{-- YAJRA SCRIPT STACK --}}
 @stack('scripts')
 
 </body>

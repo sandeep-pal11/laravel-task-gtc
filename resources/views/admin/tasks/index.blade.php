@@ -24,7 +24,7 @@
     </thead>
 </table>
 
-<!-- ================= VIEW TASK MODAL (PREMIUM) ================= -->
+<!--  VIEW TASK MODAL (PREMIUM)  -->
 <div class="modal fade" id="taskViewModal" tabindex="-1">
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content shadow">
@@ -115,7 +115,7 @@ $(function () {
         ]
     });
 
-    // ================= VIEW TASK =================
+    //  VIEW TASK
     $(document).on('click','.view-btn',function(){
 
         let id = $(this).data('id');
@@ -144,8 +144,7 @@ $(function () {
         });
     });
 
-    // ================= DELETE ALERT =================
-   // ================= DELETE CONFIRMATION =================
+   //DELETE CONFIRMATION
 $(document).on('submit','.delete-form',function (e) {
     e.preventDefault();
 

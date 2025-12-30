@@ -2,17 +2,9 @@
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-
-/*
-|--------------------------------------------------------------------------
-| CONTROLLERS
-|--------------------------------------------------------------------------
-*/
 use App\Http\Controllers\OtpController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SocialAuthController;
-
-// 🔥 ALIAS TO FIX SAME CONTROLLER NAME
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\User\DashboardController as UserDashboardController;
 
@@ -24,20 +16,16 @@ use App\Http\Controllers\Admin\TaskController;
 
 use App\Http\Controllers\User\MyTaskController;
 
-/*
-|--------------------------------------------------------------------------
-| DEFAULT
-|--------------------------------------------------------------------------
-*/
+
+// DEFAULT
+
 Route::get('/', function () {
     return redirect()->route('login');
 });
 
-/*
-|--------------------------------------------------------------------------
-| FORCE LOGOUT
-|--------------------------------------------------------------------------
-*/
+
+//FORCE LOGOUT
+
 Route::get('/force-logout', function () {
     Auth::logout();
     request()->session()->invalidate();
@@ -45,25 +33,20 @@ Route::get('/force-logout', function () {
     return redirect()->route('login');
 });
 
-/*
-|--------------------------------------------------------------------------
-| OTP
-|--------------------------------------------------------------------------
-*/
+
+// OTP
+
 Route::get('/verify-otp', [OtpController::class, 'show'])
     ->name('otp.page');
 
 Route::post('/verify-otp', [OtpController::class, 'verify'])
     ->name('otp.verify');
 
-/*
-|--------------------------------------------------------------------------
-| USER PANEL (ROLE: user)
-|--------------------------------------------------------------------------
-*/
+//USER PANEL (ROLE: user)
+
 Route::middleware(['auth','role:user'])->group(function () {
 
-    // ✅ USER DASHBOARD
+    //  USER DASHBOARD
     Route::get('/dashboard', [UserDashboardController::class, 'index'])
         ->name('dashboard');
 
@@ -77,7 +60,7 @@ Route::middleware(['auth','role:user'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])
         ->name('profile.destroy');
 
-    // 🔥 MY TASKS
+    // MY TASKS
     Route::get('/my-tasks', [MyTaskController::class, 'index'])
         ->name('user.tasks.index');
 
@@ -85,11 +68,9 @@ Route::middleware(['auth','role:user'])->group(function () {
         ->name('user.tasks.update');
 });
 
-/*
-|--------------------------------------------------------------------------
-| MANAGER PANEL (ROLE: manager)
-|--------------------------------------------------------------------------
-*/
+
+// MANAGER PANEL (ROLE: manager)
+
 Route::middleware(['auth','role:manager'])->group(function () {
 
     Route::get('/manager/dashboard', function () {
@@ -97,39 +78,30 @@ Route::middleware(['auth','role:manager'])->group(function () {
     })->name('manager.dashboard');
 });
 
-/*
-|--------------------------------------------------------------------------
-| ADMIN PANEL
-|--------------------------------------------------------------------------
-*/
+//ADMIN PANEL
+
 Route::prefix('admin')
     ->name('admin.')
     ->middleware(['auth'])
     ->group(function () {
 
-        /*
-        |-------------- DASHBOARD --------------
-        */
+
+        // DASHBOARD
+
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])
             ->middleware('permission:dashboard.view')
             ->name('dashboard');
 
-        /*
-        |-------------- TASK MODULE --------------
-        */
-        Route::resource('tasks', TaskController::class);
 
-        /*
-        |-------------- CRUD MODULES --------------
-        */
+        Route::resource('tasks', TaskController::class);
         Route::resource('users', UserController::class);
         Route::resource('countries', CountryController::class);
         Route::resource('states', StateController::class);
         Route::resource('cities', CityController::class);
 
-        /*
-        |-------------- RESTORE (SOFT DELETE) --------------
-        */
+
+        // RESTORE (SOFT DELETE)
+
         Route::post('users/{id}/restore', [UserController::class, 'restore'])
             ->name('users.restore');
 
@@ -142,15 +114,15 @@ Route::prefix('admin')
         Route::post('cities/{id}/restore', [CityController::class, 'restore'])
             ->name('cities.restore');
 
-        /*
-        |-------------- USER STATUS --------------
-        */
+
+        //USER STATUS
+
         Route::post('users/{user}/status', [UserController::class, 'changeStatus'])
             ->name('users.status');
 
-        /*
-        |-------------- AJAX STATES BY COUNTRY --------------
-        */
+
+    // AJAX STATES BY COUNTRY
+
         Route::get('get-states/{country}', function ($countryId) {
             return \App\Models\State::where('country_id', $countryId)
                 ->orderBy('name')
@@ -158,20 +130,14 @@ Route::prefix('admin')
         })->name('get.states');
     });
 
-/*
-|--------------------------------------------------------------------------
-| SOCIAL LOGIN
-|--------------------------------------------------------------------------
-*/
+
+//SOCIAL LOGIN
+
 Route::get('/auth/google', [SocialAuthController::class, 'redirectToGoogle']);
 Route::get('/auth/google/callback', [SocialAuthController::class, 'handleGoogleCallback']);
 
 Route::get('/auth/github', [SocialAuthController::class, 'redirectToGithub']);
 Route::get('/auth/github/callback', [SocialAuthController::class, 'handleGithubCallback']);
 
-/*
-|--------------------------------------------------------------------------
-| AUTH ROUTES
-|--------------------------------------------------------------------------
-*/
+
 require __DIR__.'/auth.php';
