@@ -109,6 +109,29 @@
             <div class="card-footer bg-white mt-auto"></div>
         </div>
     </div>
+
+    {{-- ================= CHARTS ================= --}}
+    <div class="row mt-4">
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white">
+                    <i class="fas fa-chart-bar me-1"></i>
+                    Tasks by Status
+                </div>
+                <div class="card-body"><canvas id="tasksChart" width="100%" height="50"></canvas></div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white">
+                    <i class="fas fa-chart-pie me-1"></i>
+                    Users by Role
+                </div>
+                <div class="card-body"><canvas id="rolesChart" width="100%" height="50"></canvas></div>
+            </div>
+        </div>
+    </div>
+
     {{-- ================= TODAY ASSIGNED TASKS ================= --}}
 <div class="row mt-5">
     <div class="col-12">
@@ -162,3 +185,48 @@
 </div>
 
 @endsection
+
+@push('scripts')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script>
+<script>
+    // TASKS CHART
+    var ctxTasks = document.getElementById("tasksChart");
+    var tasksChart = new Chart(ctxTasks, {
+        type: 'bar',
+        data: {
+            labels: ["Pending", "In Progress", "Completed"],
+            datasets: [{
+                label: "Tasks",
+                backgroundColor: ["#ffc107", "#0dcaf0", "#198754"],
+                borderColor: ["#ffc107", "#0dcaf0", "#198754"],
+                data: [{{ $chartTasks['pending'] }}, {{ $chartTasks['in_progress'] }}, {{ $chartTasks['completed'] }}],
+            }],
+        },
+        options: {
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }],
+            },
+            legend: {
+                display: false
+            }
+        }
+    });
+
+    // ROLES CHART
+    var ctxRoles = document.getElementById("rolesChart");
+    var rolesChart = new Chart(ctxRoles, {
+        type: 'pie',
+        data: {
+            labels: {!! json_encode(array_keys($chartRoles)) !!},
+            datasets: [{
+                data: {!! json_encode(array_values($chartRoles)) !!},
+                backgroundColor: ['#007bff', '#dc3545', '#ffc107', '#28a745'],
+            }],
+        },
+    });
+</script>
+@endpush

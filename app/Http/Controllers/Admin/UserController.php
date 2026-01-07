@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Exports\UsersExport;
+use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Gate;
 use Spatie\Permission\Models\Role;
 use Yajra\DataTables\Facades\DataTables;
@@ -212,5 +214,47 @@ class UserController extends Controller
         return response()->json([
             'message' => 'User restored successfully'
         ]);
+    }
+
+    // DESTROY
+
+    public function destroy(User $user)
+    {
+        $auth = Auth::user();
+
+        //  self
+        if ($auth->id === $user->id) {
+            return response()->json([
+                'message' => 'You cannot delete yourself'
+            ], 403);
+        }
+
+        //  super admin protected
+        if ($user->roles->contains('name','super-admin')) {
+            return response()->json([
+                'message' => 'Super Admin cannot be deleted'
+            ], 403);
+        }
+
+        // admin and super admin
+        if (
+            $auth->roles->contains('name','admin') &&
+            $user->roles->contains('name','super-admin')
+        ) {
+            return response()->json([
+                'message' => 'Admin cannot delete Super Admin'
+            ], 403);
+        }
+
+        $user->delete();
+
+        return response()->json([
+            'message' => 'User deleted successfully'
+        ]);
+    }
+
+    public function export()
+    {
+        return Excel::download(new UsersExport, 'users.xlsx');
     }
 }

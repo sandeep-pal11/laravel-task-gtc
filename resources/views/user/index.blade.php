@@ -19,6 +19,11 @@
             @endforeach
         </select>
     </div>
+    <div class="col-md-9 text-end">
+        <a href="{{ route('admin.users.export') }}" class="btn btn-success">
+            <i class="fas fa-file-excel me-1"></i> Export Users
+        </a>
+    </div>
 </div>
 
 <table class="table table-bordered" id="users-table">

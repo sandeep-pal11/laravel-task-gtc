@@ -98,6 +98,7 @@ Route::prefix('admin')
 
 
         Route::resource('tasks', TaskController::class);
+        Route::get('users/export', [UserController::class, 'export'])->name('users.export');
         Route::resource('users', UserController::class);
         Route::resource('countries', CountryController::class);
         Route::resource('states', StateController::class);
